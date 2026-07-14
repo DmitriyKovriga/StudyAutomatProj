@@ -1,102 +1,243 @@
-# REST Assured: теория и 15 заданий
+# REST API testing: цельный рабочий маршрут с REST Assured
 
-Практика использует [Restful Booker](https://restful-booker.herokuapp.com/apidoc/index.html) — учебный CRUD API бронирований с аутентификацией. Сервис общий для всех пользователей и периодически сбрасывает данные, поэтому нельзя полагаться на заранее известный booking id.
+Практика использует [Restful Booker](https://restful-booker.herokuapp.com/apidoc/index.html) — общий учебный CRUD API. Его [официальная Postman-документация](https://www.postman.com/automation-in-testing/restful-booker-collections/documentation/55eh7vh/restful-booker) предупреждает, что данные общие и периодически сбрасываются. Поэтому надёжный тест не берёт случайный готовый `bookingid`, а создаёт собственную запись и очищает её.
 
-## 1. Что проверяет API-тест
+Цель урока — не запомнить максимум методов REST Assured. После практики вы должны уметь самостоятельно:
 
-Хороший API-тест проверяет контракт на нескольких уровнях:
+1. прочитать контракт endpoint;
+2. подготовить контролируемые тестовые данные;
+3. отправить запрос;
+4. проверить HTTP-контракт и бизнес-данные;
+5. подтвердить сохранённое состояние отдельным запросом;
+6. диагностировать падение;
+7. оставить окружение чистым.
 
-- HTTP status code;
-- заголовки и content type;
-- структуру JSON/XML;
-- типы и значения ключевых полей;
-- бизнес-инварианты;
-- побочный эффект: созданный объект читается, обновление сохранено, удалённый объект недоступен;
-- корректное поведение при ошибочных данных и без авторизации.
+## 1. Главная модель API-теста
 
-Проверка только `statusCode(200)` обычно недостаточна.
+Весь курс собирается вокруг одного цикла:
 
-## 2. Базовый синтаксис
+```text
+КОНТРАКТ
+   ↓
+СОБСТВЕННЫЕ ДАННЫЕ
+   ↓
+REQUEST → RESPONSE
+   ↓
+TRANSPORT → STRUCTURE → BUSINESS DATA → SAVED STATE
+   ↓
+CLEANUP
+   ↓
+ДИАГНОСТИКА ПРИ ПАДЕНИИ
+```
+
+Если этот цикл понятен, конкретный инструмент можно заменить: REST Assured, curl, Postman или другой HTTP-клиент выполняют ту же работу.
+
+### Приоритет P0 — без этого нельзя считать тест рабочим
+
+- понимать method, path, параметры, headers и body;
+- проверять ожидаемый status, а не просто «любой 2xx»;
+- проверять ключевые бизнес-значения;
+- после POST/PUT/PATCH подтверждать состояние отдельным GET;
+- создавать собственные данные;
+- выполнять cleanup даже после падения;
+- иметь request/response для диагностики.
+
+### Приоритет P1 — ежедневная работа
+
+- DTO и сериализация Jackson;
+- извлечение id и связанных значений;
+- `RequestSpecification` и `ResponseSpecification`;
+- JsonPath для точечных значений;
+- AssertJ для связанных полей DTO;
+- JUnit parameterized tests для таблиц однотипных случаев;
+- JSON Schema как дополнительный структурный слой.
+
+### Приоритет P2 — изучать после устойчивой базы
+
+- собственные filters и extensions;
+- сложные GPath-выражения;
+- кастомные assertion-классы;
+- параллельное выполнение и продвинутая конфигурация HTTP-клиента;
+- интеграция секретов, retries и отчётности в CI.
+
+P2 не делает слабый тест хорошим. Сначала P0.
+
+## 2. Сначала прочитайте контракт endpoint
+
+Перед кодом ответьте письменно на семь вопросов:
+
+| Вопрос | Пример для создания booking |
+|---|---|
+| HTTP method? | `POST` |
+| Path? | `/booking` |
+| Path/query params? | нет |
+| Нужна авторизация? | нет |
+| Request headers/body? | `Content-Type: application/json`, booking JSON |
+| Ожидаемый response? | status `200`, JSON с `bookingid` и `booking` |
+| Как проверить эффект? | `GET /booking/{bookingid}` |
+
+Основные endpoints Restful Booker:
+
+| Method | Path | Назначение | Auth |
+|---|---|---|---|
+| GET | `/ping` | health check, status 201 | нет |
+| GET | `/booking` | список id и фильтрация | нет |
+| GET | `/booking/{id}` | получить booking | нет |
+| POST | `/booking` | создать booking | нет |
+| POST | `/auth` | получить token | credentials в body |
+| PUT | `/booking/{id}` | полная замена | token/basic auth |
+| PATCH | `/booking/{id}` | частичное изменение | token/basic auth |
+| DELETE | `/booking/{id}` | удалить | token/basic auth |
+
+## 3. Request: из чего реально состоит запрос
 
 ```java
 given()
     .baseUri("https://restful-booker.herokuapp.com")
+    .accept(ContentType.JSON)
     .contentType(ContentType.JSON)
+    .pathParam("id", bookingId)
+    .queryParam("firstname", "Ivan")
+    .cookie("token", token)
     .body(requestBody)
 .when()
-    .post("/booking")
-.then()
-    .statusCode(200)
-    .contentType(ContentType.JSON)
-    .body("booking.firstname", equalTo("Ivan"));
+    .put("/booking/{id}");
 ```
 
-- `given()` — подготовка запроса;
-- `when()` — HTTP-метод и endpoint;
-- `then()` — валидация ответа.
+Читайте сверху вниз:
 
-Статические импорты обычно берут из `io.restassured.RestAssured.*` и `org.hamcrest.Matchers.*`.
+- `baseUri` — сервер;
+- `accept` — какой response умеет принять клиент;
+- `contentType` — формат отправляемого body;
+- `pathParam` — часть пути;
+- `queryParam` — фильтр/настройка запроса;
+- `cookie`/`auth` — полномочия;
+- `body` — данные команды;
+- `put` — действие и endpoint.
 
-## 3. Параметры и заголовки
+Не собирайте URL строковой конкатенацией:
+
+```java
+// хуже
+.get("/booking/" + bookingId)
+
+// лучше
+.pathParam("id", bookingId)
+.get("/booking/{id}")
+```
+
+Во втором варианте структура endpoint видна, а кодирование параметра выполняет библиотека.
+
+## 4. given → when → then — это не магия
+
+```java
+given()  // подготовить request
+.when()  // выполнить HTTP action
+.then(); // проверить response
+```
+
+Минимальный health check:
 
 ```java
 given()
-    .pathParam("id", bookingId)
-    .queryParam("firstname", "Ivan")
-    .header("Accept", "application/json")
+    .baseUri(BASE_URL)
 .when()
-    .get("/booking/{id}");
+    .get("/ping")
+.then()
+    .statusCode(201)
+    .contentType(ContentType.TEXT)
+    .body(equalTo("Created"));
 ```
 
-- `pathParam` подставляется в путь;
-- `queryParam` кодируется как query string;
-- `header` передаёт заголовок;
-- `cookie("token", token)` удобен для Restful Booker.
+Это уже полный маленький тест, потому что он проверяет:
 
-Не собирайте URL конкатенацией, если можно использовать path/query params.
+1. правильный endpoint отвечает;
+2. status соответствует контракту;
+3. representation имеет ожидаемый тип;
+4. body имеет ожидаемое значение.
 
-## 4. RequestSpecification и ResponseSpecification
+## 5. Response проверяется слоями, а не случайным набором assertions
 
-Общие настройки не следует копировать в каждый тест:
+Используйте лестницу проверок.
+
+### Слой 1. Transport
 
 ```java
-RequestSpecification requestSpec = new RequestSpecBuilder()
-    .setBaseUri(BASE_URL)
-    .setContentType(ContentType.JSON)
-    .addFilter(new ErrorLoggingFilter())
-    .build();
-
-ResponseSpecification okJson = new ResponseSpecBuilder()
-    .expectStatusCode(200)
-    .expectContentType(ContentType.JSON)
-    .build();
+.statusCode(200)
+.contentType(ContentType.JSON)
 ```
 
-Specification должна содержать технические настройки, общие для группы запросов. Не прячьте в ней ожидаемые бизнес-значения конкретного теста.
+Проверяйте конкретный status из контракта. `200`, `201`, `204` и `404` означают разное.
 
-## 5. Работа с body
-
-### Строка
+### Слой 2. Structure
 
 ```java
-.body("{\"username\":\"admin\",\"password\":\"password123\"}")
+.body("bookingid", greaterThan(0))
+.body("booking.firstname", notNullValue())
 ```
 
-Подходит для короткого примера, но неудобна для сложных данных.
+Или JSON Schema. Schema отвечает на вопрос «форма и типы допустимы?», но не знает, правильная ли фамилия сохранена.
 
-### Map
+### Слой 3. Business data
+
+```java
+.body("booking.firstname", equalTo(expected.firstname()))
+.body("booking.totalprice", equalTo(expected.totalprice()))
+```
+
+### Слой 4. Saved state
+
+Response от PUT/PATCH может выглядеть правильно, даже если данные не сохранились. Поэтому mutation подтверждается отдельным GET.
+
+### Слой 5. Unchanged state
+
+После PATCH проверьте не только изменённое поле, но и важные поля, которые обязаны сохраниться.
+
+## 6. Собственные данные важнее красивого assertion
+
+Публичный сервис общий. Тест, который обновляет первый id из `/booking`, может изменить чужую запись или упасть после сброса базы.
+
+Надёжная схема:
+
+```text
+создать уникальный booking
+        ↓
+сохранить bookingid
+        ↓
+работать только с этим bookingid
+        ↓
+удалить его в @AfterEach/finally
+```
+
+Уникальность:
+
+```java
+String firstName = "ApiTest-" + UUID.randomUUID();
+```
+
+Случайное значение должно попадать в отчёт при падении. Иначе тест невозможно воспроизвести.
+
+## 7. Map, JSON string или DTO
+
+### Map — увидеть фактическую структуру JSON
 
 ```java
 Map<String, Object> body = Map.of(
     "firstname", "Ivan",
-    "totalprice", 150
+    "totalprice", 150,
+    "bookingdates", Map.of(
+        "checkin", "2026-08-01",
+        "checkout", "2026-08-05")
 );
 ```
 
-### DTO/record
+Map полезен в первых задачах и для маленького PATCH. Минусы: опечатки в ключах и слабая типобезопасность.
+
+### DTO/record — основной рабочий вариант
 
 ```java
 record BookingDates(String checkin, String checkout) {}
+
 record BookingRequest(
     String firstname,
     String lastname,
@@ -107,155 +248,401 @@ record BookingRequest(
 ) {}
 ```
 
-DTO даёт типобезопасность, переиспользование и удобную сериализацию через Jackson.
+```java
+given()
+    .contentType(ContentType.JSON)
+    .body(bookingRequest); // Jackson сериализует DTO в JSON
+```
 
-## 6. Извлечение ответа
+DTO делает контракт видимым в Java, помогает IDE и упрощает сравнение expected/actual.
+
+### JSON string
+
+Подходит для очень короткого негативного payload или точной проверки сырого формата. Большие JSON-строки в Java трудно читать и поддерживать.
+
+## 8. Четыре способа работать с response — выбирайте по задаче
+
+### 1. Inline Hamcrest
 
 ```java
-Response response = given().spec(requestSpec)
-    .when().get("/booking/{id}", id);
+response.then()
+    .statusCode(200)
+    .body("firstname", equalTo(expected.firstname()))
+    .body("bookingdates.checkin", equalTo(expected.bookingdates().checkin()));
+```
 
-int status = response.statusCode();
-String firstName = response.jsonPath().getString("firstname");
+Используйте для 1–4 простых полей, когда проверка остаётся читаемой.
+
+### 2. Извлечь одно значение
+
+```java
 int bookingId = response.then()
     .statusCode(200)
-    .extract().path("bookingid");
-
-Booking booking = response.as(Booking.class);
+    .extract()
+    .path("bookingid");
 ```
 
-Выбирайте один подход осознанно:
+Используйте, если значение нужно следующему запросу.
 
-- inline Hamcrest body checks — компактный контракт;
-- `extract().path(...)` — нужно одно значение для следующего шага;
-- `Response` — нужны status, headers и body;
-- десериализация DTO — много связанных проверок и дальнейшая работа с объектом.
-
-## 7. GPath/JsonPath
-
-Примеры выражений:
+### 3. JsonPath
 
 ```java
-body("bookingid", everyItem(greaterThan(0)));
-body("booking.findAll { it.totalprice > 100 }.firstname", hasItem("Ivan"));
+String firstName = response.jsonPath().getString("firstname");
+int price = response.jsonPath().getInt("totalprice");
 ```
 
-Не делайте выражение настолько сложным, что его невозможно быстро прочитать. Для сложной бизнес-проверки извлеките DTO/коллекцию и примените AssertJ.
+Используйте для нескольких отдельных значений. Не превращайте JsonPath в скрытый язык программирования.
 
-## 8. Аутентификация Restful Booker
+### 4. DTO + AssertJ
 
-Токен создаётся запросом:
+```java
+BookingResponse actual = response.as(BookingResponse.class);
 
-```http
-POST /auth
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "password123"
-}
+assertThat(actual)
+    .usingRecursiveComparison()
+    .isEqualTo(expected);
 ```
 
-Для `PUT`, `PATCH`, `DELETE` передайте cookie:
+Используйте, когда проверяется связанный объект целиком или результат нужен дальше.
+
+Правило выбора:
+
+```text
+1 поле → extract/path
+несколько простых полей → inline body или JsonPath
+связанный объект → DTO + AssertJ
+форма/типы → schema (дополнительно)
+```
+
+## 9. Полный create → read сценарий
+
+```java
+BookingRequest expected = uniqueBooking();
+
+int bookingId = given()
+    .spec(BASE_SPEC)
+    .contentType(ContentType.JSON)
+    .body(expected)
+.when()
+    .post("/booking")
+.then()
+    .statusCode(200)
+    .extract()
+    .path("bookingid");
+
+BookingResponse actual = given()
+    .spec(BASE_SPEC)
+    .pathParam("id", bookingId)
+.when()
+    .get("/booking/{id}")
+.then()
+    .statusCode(200)
+    .extract()
+    .as(BookingResponse.class);
+
+assertThat(actual)
+    .usingRecursiveComparison()
+    .isEqualTo(expected);
+```
+
+POST отвечает за создание. GET доказывает сохранение. AssertJ сравнивает связанный DTO. Это одна цельная проверка, а не три несвязанные технологии.
+
+## 10. Specifications: убираем шум, не смысл
+
+```java
+RequestSpecification baseSpec = new RequestSpecBuilder()
+    .setBaseUri(BASE_URL)
+    .setAccept(ContentType.JSON)
+    .addFilter(new ErrorLoggingFilter())
+    .build();
+```
+
+В specification уместны:
+
+- base URI;
+- общие безопасные headers;
+- accept/content type для группы запросов;
+- timeout/config;
+- условное логирование;
+- техническая авторизация конкретного клиента.
+
+Не прячьте туда:
+
+- firstname конкретного теста;
+- ожидаемый status, если endpoint имеет разные результаты;
+- бизнес-assertions;
+- случайно изменяемое глобальное состояние.
+
+Response specification:
+
+```java
+ResponseSpecification okJson = new ResponseSpecBuilder()
+    .expectStatusCode(200)
+    .expectContentType(ContentType.JSON)
+    .build();
+```
+
+После `.spec(okJson)` тест всё равно проверяет бизнес-данные.
+
+## 11. Auth — часть контракта, а не служебная мелочь
+
+Получение token:
+
+```java
+String token = given()
+    .spec(BASE_SPEC)
+    .contentType(ContentType.JSON)
+    .body(new AuthRequest("admin", "password123"))
+.when()
+    .post("/auth")
+.then()
+    .statusCode(200)
+    .extract()
+    .path("token");
+```
+
+Использование:
 
 ```java
 .cookie("token", token)
 ```
 
-Токен нельзя выводить в общие логи реального проекта. В учебном API он временный, но привычку скрывать credentials нужно формировать сразу.
+Обязательно проверяйте и отказ без авторизации. Иначе suite доказывает только happy path и не проверяет защиту endpoint.
 
-## 9. Основные endpoints
+В рабочем проекте token, password и Authorization нельзя печатать в лог или Allure без маскирования.
 
-| Метод | Путь | Назначение |
-|---|---|---|
-| GET | `/ping` | health check, ожидается 201 |
-| POST | `/auth` | получить token |
-| GET | `/booking` | список booking id, поддерживает фильтры |
-| GET | `/booking/{id}` | получить бронирование |
-| POST | `/booking` | создать бронирование |
-| PUT | `/booking/{id}` | полностью заменить бронирование |
-| PATCH | `/booking/{id}` | частично обновить бронирование |
-| DELETE | `/booking/{id}` | удалить бронирование |
+## 12. PUT, PATCH и DELETE проверяют состояние
 
-Документация и примеры также доступны в [официальной Postman-коллекции Restful Booker](https://www.postman.com/automation-in-testing/restful-booker-collections/collection/55eh7vh/restful-booker).
+### PUT
 
-## 10. Проверка JSON Schema
+PUT передаёт полное новое представление. После запроса:
+
+1. status ответа;
+2. body ответа;
+3. отдельный GET;
+4. полное сравнение saved DTO с updated DTO.
+
+### PATCH
+
+PATCH меняет часть объекта. После запроса:
+
+1. изменённое поле имеет новое значение;
+2. критичные остальные поля не изменились.
+
+Для связанных проверок удобно:
 
 ```java
-given().spec(requestSpec)
-.when().get("/booking/{id}", id)
-.then()
-    .body(matchesJsonSchemaInClasspath("schemas/booking-schema.json"));
+SoftAssertions.assertSoftly(softly -> {
+    softly.assertThat(saved.lastname()).isEqualTo(changedLastName);
+    softly.assertThat(saved.firstname()).isEqualTo(original.firstname());
+    softly.assertThat(saved.bookingdates()).isEqualTo(original.bookingdates());
+});
 ```
 
-Schema проверяет форму и типы, но не заменяет бизнес-проверки. JSON с неправильной фамилией может полностью соответствовать schema.
+### DELETE
 
-## 11. Логирование и диагностика
+Ответ DELETE недостаточен. Подтвердите отдельным GET, что ресурс недоступен.
+
+## 13. JUnit усиливает REST-сценарии
+
+JUnit отвечает за выполнение и организацию:
+
+- `@Test` — самостоятельный сценарий;
+- `@ParameterizedTest` — одна логика для таблицы входов;
+- `@BeforeEach`/`@AfterEach` — lifecycle и cleanup;
+- `@Disabled` — учебный переключатель;
+- tags/display names — наборы и отчётность.
+
+Пример таблицы неправильных credentials:
+
+```java
+@ParameterizedTest
+@CsvSource({
+    "admin, wrong-password",
+    "wrong-user, password123"
+})
+void invalidAuth(String username, String password) {
+    // один контракт, разные входные данные
+}
+```
+
+Не создавайте цепочку зависимых методов `testCreate → testUpdate → testDelete`. Один полный CRUD-flow может быть цепочкой внутри одного теста, но отдельные `@Test` должны быть независимы.
+
+## 14. AssertJ усиливает проверку данных
+
+REST Assured/Hamcrest особенно удобен рядом с HTTP response:
+
+```java
+response.then().statusCode(200).contentType(ContentType.JSON);
+```
+
+AssertJ особенно удобен после извлечения Java-объекта:
+
+```java
+assertThat(actualBooking)
+    .usingRecursiveComparison()
+    .isEqualTo(expectedBooking);
+```
+
+Разделение ответственности:
+
+```text
+REST Assured → отправка request и transport response
+Hamcrest     → компактные inline body checks
+Jackson      → JSON ↔ DTO
+AssertJ      → связанные проверки Java-объектов
+JUnit        → lifecycle, parameterization, запуск и отчёт
+```
+
+## 15. JSON Schema: полезный, но не главный слой
+
+```java
+.body(matchesJsonSchemaInClasspath(
+    "schemas/lesson01/booking-schema.json"));
+```
+
+Schema ловит:
+
+- отсутствующее обязательное поле;
+- неправильный JSON type;
+- неправильную вложенность;
+- часть форматных ошибок.
+
+Schema не поймает:
+
+- чужой firstname;
+- неправильную сумму, если она остаётся integer;
+- несохранённый PATCH;
+- отсутствие авторизационной проверки.
+
+Поэтому schema всегда дополняется бизнес-assertions.
+
+## 16. Диагностика: хороший тест помогает найти причину
 
 ```java
 given()
     .log().ifValidationFails()
 .when()
-    .get("/booking")
+    .get("/booking/{id}", id)
 .then()
     .log().ifValidationFails();
 ```
 
-Не включайте `.log().all()` глобально в большом suite: логи станут шумными и могут раскрыть токены/персональные данные. Для диагностики полезны `ErrorLoggingFilter`, `ResponseLoggingFilter` по условию и собственный correlation id.
+При падении нужно видеть:
 
-## 12. Cleanup и независимость
+1. environment/base URL;
+2. method и path;
+3. безопасные headers и request body;
+4. response status, headers и body;
+5. созданные id/уникальные данные;
+6. expected и actual;
+7. на каком шаге упал flow.
 
-Shared API означает, что чужие данные могут исчезнуть. Надёжный сценарий:
+Не включайте глобальный `.log().all()` бездумно: шум мешает, а секреты могут попасть в CI-логи.
 
-1. Создать собственное бронирование.
-2. Извлечь его id.
-3. Выполнить проверяемое действие.
-4. В `finally` удалить созданные данные, если они ещё существуют.
+Классификация причины:
 
-Cleanup не должен скрывать первоначальное падение теста. Не обновляйте и не удаляйте случайную запись из `GET /booking`.
+| Категория | Пример |
+|---|---|
+| Product defect | PATCH изменил лишнее поле |
+| Test defect | перепутан JsonPath или expected |
+| Test data defect | используется чужой/удалённый id |
+| Environment defect | DNS, timeout, сервис недоступен |
+| Contract mismatch | документация и реализация расходятся |
 
-## 13. Негативные проверки
+## 17. Cleanup и независимость
 
-Проверяйте:
+`@AfterEach` подходит для всех id, зарегистрированных тестом. `try/finally` особенно полезен для длинного финального flow.
 
-- неизвестный id;
-- отсутствие/невалидную авторизацию;
-- отсутствующее обязательное поле;
-- неверный тип;
-- некорректный content type;
-- граничные значения.
+```java
+Integer bookingId = null;
+try {
+    bookingId = createBooking();
+    // проверки
+} finally {
+    if (bookingId != null) {
+        deleteBookingIfPresent(bookingId);
+    }
+}
+```
 
-Учебный Restful Booker намеренно имеет особенности и дефекты. Если фактическое поведение расходится с документацией, сохраните request/response и сформулируйте defect, а не подгоняйте assertion без объяснения.
+Cleanup:
 
-## 14. Уровень middle+: архитектура API-тестов
+- выполняется после упавшего assertion;
+- удаляет только данные текущего теста;
+- не скрывает исходную ошибку;
+- терпимо относится к уже удалённому ресурсу;
+- не использует случайный id из общего списка.
 
-- Разделяйте transport layer, модели данных, builders/fixtures и сами тесты.
-- Не превращайте endpoint client в набор assertions: client выполняет запрос, тест определяет ожидание.
-- Переиспользуйте specifications, но не создавайте один глобальный изменяемый объект на все случаи.
-- Проверяйте итоговое состояние отдельным GET после mutation.
-- Не связывайте разные `@Test` в цепочку create → update → delete. Один end-to-end тест может быть цепочкой внутри одного метода.
-- Указывайте разумные connect/read timeout в рабочих проектах.
-- Отличайте retry инфраструктурной операции от маскировки продуктового дефекта.
-- В CI прикладывайте request/response к Allure только при необходимости и очищайте секреты.
+## 18. Как самостоятельно тестировать новый endpoint
 
-## Задания
+Используйте этот алгоритм на работе:
 
-Все заготовки находятся в `RestAssuredTasksTest.java`.
+1. Прочитать контракт и выписать method/path/auth/request/response.
+2. Определить happy path и главные риски.
+3. Решить, откуда берутся независимые данные.
+4. Сделать один запрос вручную и изучить реальный response.
+5. Автоматизировать happy path с transport + business assertions.
+6. Для mutation добавить read-back.
+7. Добавить самые ценные негативные сценарии.
+8. Добавить cleanup и условное логирование.
+9. Убрать техническое дублирование в specs/client/fixtures.
+10. Проверить, что каждый тест запускается отдельно и параллельно не портит чужие данные.
 
-1. Health check `/ping`.
-2. Получение списка booking id и проверка структуры.
-3. Фильтрация списка по firstname на собственных данных.
-4. Создание бронирования из `Map`.
-5. Извлечение id и последующий GET.
-6. Десериализация ответа в DTO.
-7. Создание и применение `RequestSpecification`.
-8. Создание и применение `ResponseSpecification`.
-9. Получение auth token и негативная проверка credentials.
-10. Полное обновление через PUT и проверка сохранённого состояния.
-11. Частичное обновление через PATCH и проверка неизменившихся полей.
-12. DELETE и подтверждение, что GET возвращает 404.
-13. Негативный GET неизвестного id с диагностическим логированием.
-14. Проверка ответа по JSON Schema.
-15. Независимый CRUD-сценарий с cleanup в `finally`.
+## 19. Маршрут заданий
 
-Внешний сервис может быть временно недоступен. Ошибка сети не означает, что assertion написан неверно; сохраните stack trace и повторите позже, но не добавляйте бесконечный retry.
+Задания находятся в `RestAssuredTasksTest.java` и выполняются последовательно.
+
+### Блок 1 — HTTP-контракт
+
+1. Полный health check.
+2. Transport и shape списка booking id.
+3. Извлечение существующего id и GET по path parameter.
+4. Неизвестный id и диагностическое логирование.
+
+### Блок 2 — собственные данные
+
+5. POST из Map.
+6. POST из DTO и десериализация wrapper-response.
+7. POST → GET → recursive comparison.
+8. Фильтрация только собственной записи.
+
+### Блок 3 — выбор способа проверки body
+
+9. Небольшой inline-контракт Hamcrest.
+10. JsonPath для значений, нужных следующим шагам.
+11. JSON Schema плюс бизнес-assertion.
+
+### Блок 4 — переиспользование без потери смысла
+
+12. RequestSpecification.
+13. ResponseSpecification.
+
+### Блок 5 — auth и изменение состояния
+
+14. Получение token.
+15. Неверные credentials как JUnit data table.
+16. PUT и полное read-back сравнение.
+17. PATCH и проверка изменённого/неизменившегося через AssertJ SoftAssertions.
+18. Отказ без авторизации.
+19. DELETE и подтверждение состояния через GET.
+
+### Блок 6 — самостоятельность
+
+20. Две независимые записи без смешивания данных.
+21. Финальный boss: независимый CRUD-flow с REST Assured, DTO, AssertJ, JUnit lifecycle и cleanup.
+
+## 20. Критерий готовности
+
+Вы готовы применять это на работе, если без копирования можете объяснить и собрать тест, который:
+
+- создаёт контролируемые данные;
+- отправляет request с правильными method/path/params/headers/body/auth;
+- проверяет конкретный HTTP-контракт;
+- выбирает подходящий способ проверки body;
+- подтверждает state transition отдельным GET;
+- проверяет значимый негативный сценарий;
+- очищает данные после любого исхода;
+- при падении оставляет достаточно информации для локализации причины.
+
+Это важнее знания редкого метода REST Assured наизусть.
