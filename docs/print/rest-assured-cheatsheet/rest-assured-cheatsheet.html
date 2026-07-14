@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>REST Assured — шпаргалка на 5 листов A4</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #e9edf2; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #17202a; }
+    .sheet {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      padding: 8mm 9mm 7mm;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      break-after: page;
+      page-break-after: always;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .topbar {
+      min-height: 18mm;
+      border-bottom: 1.2mm solid #24527a;
+      display: grid;
+      grid-template-columns: 22mm 1fr auto;
+      gap: 4mm;
+      align-items: center;
+      padding-bottom: 3mm;
+      margin-bottom: 3mm;
+    }
+    .page-no {
+      width: 18mm; height: 14mm; border-radius: 2mm;
+      display: flex; align-items: center; justify-content: center;
+      background: #24527a; color: white; font-size: 18pt; font-weight: 800;
+    }
+    .title h1 { margin: 0; font-size: 16pt; line-height: 1.05; }
+    .title p { margin: 1mm 0 0; font-size: 8.5pt; color: #52616b; }
+    .level {
+      border: .45mm solid #24527a; border-radius: 5mm;
+      padding: 1.6mm 3.2mm; font-size: 8.5pt; font-weight: 700;
+      color: #24527a; white-space: nowrap;
+    }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; align-items: start; }
+    .cols.wide-left { grid-template-columns: 1.08fr .92fr; }
+    .stack { display: grid; gap: 2.5mm; }
+    .card {
+      border: .3mm solid #c9d4df; border-radius: 1.8mm;
+      padding: 2.3mm 2.7mm; break-inside: avoid;
+    }
+    .card.blue { background: #f3f8fc; border-color: #9bbbd4; }
+    .card.green { background: #f2f8f4; border-color: #9dc6aa; }
+    .card.warn { background: #fff8e8; border-color: #d8b76b; }
+    .card.danger { background: #fff2f1; border-color: #d29b96; }
+    h2 { margin: 0 0 1.5mm; font-size: 10.8pt; color: #24527a; }
+    h3 { margin: 1.2mm 0 .8mm; font-size: 9.2pt; color: #263b4a; }
+    p { margin: .8mm 0; font-size: 8.3pt; line-height: 1.25; }
+    ul, ol { margin: 1mm 0 0 4.3mm; padding: 0; }
+    li { margin: .7mm 0; font-size: 8.1pt; line-height: 1.22; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: .95em; }
+    pre {
+      margin: 1.2mm 0 0; padding: 2mm 2.2mm;
+      background: #17232d; color: #f4f7f9; border-radius: 1.4mm;
+      font: 7.15pt/1.28 Consolas, "Courier New", monospace;
+      white-space: pre-wrap; tab-size: 2; overflow: hidden;
+    }
+    .small pre { font-size: 6.8pt; line-height: 1.23; }
+    .tiny pre { font-size: 6.35pt; line-height: 1.2; }
+    .kw { color: #8bd5ff; } .str { color: #b8e994; } .cm { color: #9aa8b2; }
+    .inline { background: #edf1f5; padding: .15mm .7mm; border-radius: .6mm; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5mm; margin-top: 1.5mm; }
+    .flow div { text-align: center; padding: 1.8mm 1mm; border-radius: 1mm; font-size: 8pt; font-weight: 700; }
+    .flow .g { background: #dceef8; } .flow .w { background: #e8f3eb; } .flow .t { background: #fff0cc; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1.2mm; font-size: 7.55pt; }
+    th, td { border: .25mm solid #c9d4df; padding: 1mm 1.2mm; text-align: left; vertical-align: top; }
+    th { background: #eaf1f7; color: #24465f; }
+    .check { list-style: none; margin-left: 0; }
+    .check li::before { content: "□"; font-weight: 800; margin-right: 1.4mm; color: #24527a; }
+    .goodbad { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm; }
+    .goodbad > div { padding: 1.5mm; border-radius: 1mm; }
+    .good { background: #edf7ef; } .bad { background: #fff0ef; }
+    .tag { display: inline-block; padding: .3mm 1mm; margin: .2mm; border-radius: 1mm; background: #dfeaf2; font-size: 7.2pt; font-weight: 700; }
+    .footer {
+      height: 5mm; margin-top: 2mm; padding-top: 1.2mm;
+      border-top: .25mm solid #d7dee5; color: #65727d;
+      display: flex; justify-content: space-between; font-size: 6.8pt;
+    }
+    @media screen {
+      .sheet { margin: 8mm auto; box-shadow: 0 2mm 7mm rgba(0,0,0,.17); }
+    }
+    @media print {
+      html, body { background: white; }
+      .sheet { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ЛИСТ 1 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">1/5</div>
+    <div class="title"><h1>REST Assured: быстрый старт</h1><p>Минимальный тест, структура запроса, первые проверки</p></div>
+    <div class="level">СЛОЖНОСТЬ: НАЧАЛЬНАЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card blue">
+        <h2>Модель given → when → then</h2>
+        <div class="flow"><div class="g">GIVEN<br>подготовка</div><div class="w">WHEN<br>действие</div><div class="t">THEN<br>проверка</div></div>
+        <pre><span class="kw">import static</span> io.restassured.RestAssured.*;
+<span class="kw">import static</span> org.hamcrest.Matchers.*;
+
+given()
+    .baseUri(<span class="str">"https://restful-booker.herokuapp.com"</span>)
+    .accept(ContentType.JSON)
+.when()
+    .get(<span class="str">"/booking"</span>)
+.then()
+    .statusCode(<span class="str">200</span>)
+    .contentType(ContentType.JSON)
+    .body(<span class="str">"bookingid"</span>, everyItem(greaterThan(<span class="str">0</span>)));</pre>
+      </section>
+      <section class="card">
+        <h2>Что находится в каждом блоке</h2>
+        <table>
+          <tr><th>given()</th><td>base URI, headers, cookies, path/query params, body, filters, auth.</td></tr>
+          <tr><th>when()</th><td>HTTP-метод: <code>get/post/put/patch/delete</code> и endpoint.</td></tr>
+          <tr><th>then()</th><td>Status, content type, headers, body, schema, extraction.</td></tr>
+        </table>
+        <p><b>Правило:</b> подготовка не должна содержать assertion, а проверка — выполнять новый бизнес-запрос.</p>
+      </section>
+      <section class="card green">
+        <h2>Основные HTTP-методы</h2>
+        <table>
+          <tr><th>GET</th><td>Чтение. Обычно без body.</td><th>POST</th><td>Создание/команда.</td></tr>
+          <tr><th>PUT</th><td>Полная замена.</td><th>PATCH</th><td>Частичное изменение.</td></tr>
+          <tr><th>DELETE</th><td>Удаление.</td><th>HEAD</th><td>Только headers.</td></tr>
+        </table>
+      </section>
+      <section class="card warn">
+        <h2>Минимум полезных проверок</h2>
+        <ul>
+          <li><b>Status:</b> соответствует контракту, а не просто «любой 2xx».</li>
+          <li><b>Content-Type:</b> клиент действительно получил ожидаемый формат.</li>
+          <li><b>Структура:</b> обязательные поля существуют и имеют нужный тип.</li>
+          <li><b>Данные:</b> ответ относится именно к отправленному запросу.</li>
+          <li><b>Эффект:</b> после POST/PUT/PATCH состояние подтверждено отдельным GET.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card">
+        <h2>Полезные проверки body</h2>
+        <pre>.body(<span class="str">"firstname"</span>, equalTo(<span class="str">"Ivan"</span>))
+.body(<span class="str">"totalprice"</span>, greaterThan(<span class="str">0</span>))
+.body(<span class="str">"depositpaid"</span>, is(<span class="str">true</span>))
+.body(<span class="str">"bookingdates.checkin"</span>, notNullValue())
+.body(<span class="str">"bookingid"</span>, hasSize(greaterThan(<span class="str">0</span>)))</pre>
+        <h3>Частые matchers</h3>
+        <p><span class="tag">equalTo</span><span class="tag">notNullValue</span><span class="tag">hasItem</span><span class="tag">hasSize</span><span class="tag">contains</span><span class="tag">everyItem</span><span class="tag">greaterThan</span><span class="tag">allOf</span><span class="tag">anyOf</span></p>
+      </section>
+      <section class="card blue small">
+        <h2>Health check Restful Booker</h2>
+        <pre>given()
+    .baseUri(BASE_URL)
+.when()
+    .get(<span class="str">"/ping"</span>)
+.then()
+    .statusCode(<span class="str">201</span>)
+    .body(equalTo(<span class="str">"Created"</span>));</pre>
+        <p>Не предполагайте, что health endpoint обязан вернуть 200: проверяйте документированный контракт.</p>
+      </section>
+      <section class="card danger">
+        <h2>Антипаттерны первого уровня</h2>
+        <ul>
+          <li>Только <code>statusCode(200)</code> без данных и структуры.</li>
+          <li>Сборка URL строкой: <code>"/booking/" + id</code>, когда есть path param.</li>
+          <li><code>Thread.sleep</code> вместо ожидания условия.</li>
+          <li>Случайный booking id из общего списка для PUT/DELETE.</li>
+          <li><code>assertThat(true).isTrue()</code> после непроверенных вычислений.</li>
+          <li>Один тест зависит от результата другого теста.</li>
+        </ul>
+      </section>
+      <section class="card green">
+        <h2>Быстрый шаблон нового теста</h2>
+        <ol>
+          <li>Подготовить уникальные данные.</li>
+          <li>Выполнить ровно одно проверяемое действие.</li>
+          <li>Проверить transport contract.</li>
+          <li>Проверить бизнес-значения.</li>
+          <li>Очистить созданные данные даже при падении.</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>REST Assured • лист 1 • старт</span><span>Главная мысль: проверяйте контракт и данные, а не только HTTP 200.</span></footer>
+</section>
+
+<!-- ЛИСТ 2 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">2/5</div>
+    <div class="title"><h1>Построение запросов</h1><p>Параметры, headers, cookies, body и переиспользуемые specifications</p></div>
+    <div class="level">СЛОЖНОСТЬ: БАЗОВАЯ+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card blue small">
+        <h2>Path и query parameters</h2>
+        <pre>given()
+    .baseUri(BASE_URL)
+    .pathParam(<span class="str">"id"</span>, bookingId)
+.when()
+    .get(<span class="str">"/booking/{id}"</span>);
+
+given()
+    .baseUri(BASE_URL)
+    .queryParam(<span class="str">"firstname"</span>, <span class="str">"Ivan"</span>)
+    .queryParam(<span class="str">"lastname"</span>, <span class="str">"Petrov"</span>)
+.when()
+    .get(<span class="str">"/booking"</span>);</pre>
+        <p><b>Path</b> определяет ресурс, <b>query</b> фильтрует/сортирует/задаёт страницу. REST Assured сам выполнит URL encoding.</p>
+      </section>
+      <section class="card">
+        <h2>Headers, cookies и auth</h2>
+        <pre>given()
+    .header(<span class="str">"X-Request-Id"</span>, requestId)
+    .accept(ContentType.JSON)
+    .contentType(ContentType.JSON)
+    .cookie(<span class="str">"token"</span>, token)
+.when()
+    .put(<span class="str">"/booking/{id}"</span>, id);</pre>
+        <ul>
+          <li><code>Accept</code> — какой ответ понимает клиент.</li>
+          <li><code>Content-Type</code> — формат отправляемого body.</li>
+          <li>Не логируйте token/password в рабочем CI.</li>
+        </ul>
+      </section>
+      <section class="card green small">
+        <h2>Body: Map → DTO</h2>
+        <pre><span class="cm">// Быстро, но слабее типизация</span>
+Map&lt;String, Object&gt; body = Map.of(
+    <span class="str">"firstname"</span>, <span class="str">"Ivan"</span>,
+    <span class="str">"totalprice"</span>, <span class="str">150</span>);
+
+<span class="cm">// Предпочтительно для поддерживаемого suite</span>
+record BookingDates(String checkin, String checkout) {}
+record BookingRequest(
+    String firstname, String lastname,
+    int totalprice, boolean depositpaid,
+    BookingDates bookingdates,
+    String additionalneeds) {}
+
+given().contentType(JSON).body(bookingRequest);</pre>
+      </section>
+      <section class="card warn">
+        <h2>Когда какой body</h2>
+        <table>
+          <tr><th>String</th><td>Короткий негативный JSON, проверка «сырого» payload.</td></tr>
+          <tr><th>Map</th><td>Маленький PATCH или одноразовое тело.</td></tr>
+          <tr><th>DTO</th><td>Основной путь: типы, IDE, builder, рефакторинг.</td></tr>
+          <tr><th>File</th><td>Большой статичный fixture; следить за актуальностью.</td></tr>
+        </table>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card blue tiny">
+        <h2>RequestSpecification</h2>
+        <pre>RequestSpecification baseSpec =
+    <span class="kw">new</span> RequestSpecBuilder()
+        .setBaseUri(BASE_URL)
+        .setAccept(ContentType.JSON)
+        .setContentType(ContentType.JSON)
+        .addFilter(<span class="kw">new</span> ErrorLoggingFilter())
+        .build();
+
+Response response = given()
+    .spec(baseSpec)
+    .body(request)
+.when()
+    .post(<span class="str">"/booking"</span>);</pre>
+        <p>Храните здесь общие технические настройки. Не кладите специфичный expected firstname или изменяемый booking id.</p>
+      </section>
+      <section class="card green tiny">
+        <h2>ResponseSpecification</h2>
+        <pre>ResponseSpecification okJson =
+    <span class="kw">new</span> ResponseSpecBuilder()
+        .expectStatusCode(<span class="str">200</span>)
+        .expectContentType(ContentType.JSON)
+        .build();
+
+given().spec(baseSpec)
+.when().get(<span class="str">"/booking"</span>)
+.then()
+    .spec(okJson)
+    .body(<span class="str">"bookingid"</span>, everyItem(greaterThan(<span class="str">0</span>)));</pre>
+        <p>Specification проверяет общий transport contract; конкретные бизнес-ожидания остаются в тесте.</p>
+      </section>
+      <section class="card">
+        <h2>Form, multipart и массив query</h2>
+        <pre>given().formParam(<span class="str">"username"</span>, <span class="str">"ivan"</span>);
+given().multiPart(<span class="str">"file"</span>, file, <span class="str">"image/png"</span>);
+given().queryParam(<span class="str">"status"</span>, List.of(<span class="str">"NEW"</span>, <span class="str">"PAID"</span>));</pre>
+        <p>Точный wire-format массива зависит от API: повторяющиеся keys, CSV или brackets. Проверяйте документацию/traffic.</p>
+      </section>
+      <section class="card danger">
+        <h2>Где чаще всего ошибаются</h2>
+        <ul>
+          <li>Путают <code>Accept</code> и <code>Content-Type</code>.</li>
+          <li>Глобально изменяют <code>RestAssured.baseURI</code> в параллельных тестах.</li>
+          <li>Повторяют 10 строк настройки в каждом тесте.</li>
+          <li>Создают «универсальную spec» со всеми возможными headers.</li>
+          <li>Хранят production credentials в исходниках.</li>
+          <li>DTO не соответствует именам JSON-полей и silently получает null.</li>
+        </ul>
+      </section>
+      <section class="card warn">
+        <h2>Практический ориентир</h2>
+        <p><b>Map</b> для небольшого PATCH. <b>DTO</b> для create/PUT и чтения. <b>Specification</b> для одинаковой транспортной настройки. <b>Builder/factory</b> для удобного создания тестовых данных.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>REST Assured • лист 2 • запросы</span><span>Path/query/header/body должны отражать контракт, а не удобство теста.</span></footer>
+</section>
+
+<!-- ЛИСТ 3 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">3/5</div>
+    <div class="title"><h1>Ответы и глубокие проверки</h1><p>Response, extraction, JsonPath/GPath, DTO, AssertJ и JSON Schema</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card blue small">
+        <h2>Четыре способа работать с ответом</h2>
+        <pre><span class="cm">// 1. Inline contract</span>
+given().when().get(<span class="str">"/booking/{id}"</span>, id)
+ .then().statusCode(<span class="str">200</span>)
+ .body(<span class="str">"firstname"</span>, equalTo(<span class="str">"Ivan"</span>));
+
+<span class="cm">// 2. Нужен весь HTTP response</span>
+Response response = given().when().get(...);
+int status = response.statusCode();
+
+<span class="cm">// 3. Одно значение для следующего шага</span>
+int id = response.then().extract().path(<span class="str">"bookingid"</span>);
+
+<span class="cm">// 4. Типизированный объект</span>
+BookingResponse dto = response.as(BookingResponse.class);</pre>
+      </section>
+      <section class="card green">
+        <h2>DTO + AssertJ: удобно для многих полей</h2>
+        <pre>BookingResponse actual = response.as(BookingResponse.class);
+
+assertThat(actual)
+    .usingRecursiveComparison()
+    .isEqualTo(expected);
+
+assertThat(actual.totalprice()).isPositive();
+assertThat(actual.bookingdates().checkout())
+    .isGreaterThan(actual.bookingdates().checkin());</pre>
+        <p>Recursive comparison проверяет данные, но бизнес-инварианты добавляйте отдельно. Не игнорируйте поля только ради зелёного теста.</p>
+      </section>
+      <section class="card small">
+        <h2>JsonPath / GPath</h2>
+        <pre>response.jsonPath().getString(<span class="str">"firstname"</span>);
+response.jsonPath().getInt(<span class="str">"totalprice"</span>);
+response.jsonPath().getList(<span class="str">"bookingid"</span>, Integer.class);
+
+<span class="cm">// Фильтрация массива (Groovy GPath)</span>
+.body(<span class="str">"items.findAll { it.price &gt; 100 }.name"</span>,
+      hasItems(<span class="str">"Book"</span>, <span class="str">"Keyboard"</span>));</pre>
+        <p>Если выражение трудно прочитать вслух — извлеките коллекцию и проверяйте AssertJ.</p>
+      </section>
+      <section class="card warn">
+        <h2>Типы: частая ловушка</h2>
+        <ul>
+          <li>JSON number может стать <code>Integer</code>, <code>Long</code>, <code>Float</code> или <code>BigDecimal</code>.</li>
+          <li>Не сравнивайте денежные double точным равенством.</li>
+          <li>Для дат десериализуйте <code>LocalDate</code> или явно проверяйте ISO-формат.</li>
+          <li>Отличайте отсутствующее поле от поля со значением <code>null</code>.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card blue small">
+        <h2>Headers и время ответа</h2>
+        <pre>response.then()
+    .header(<span class="str">"Content-Type"</span>, containsString(<span class="str">"json"</span>))
+    .header(<span class="str">"X-Request-Id"</span>, not(blankString()))
+    .time(lessThan(<span class="str">2000L</span>));</pre>
+        <p>Жёсткая проверка latency в shared test-среде часто flaky. Для performance SLA нужны специализированные нагрузочные тесты и статистика, а не один запрос.</p>
+      </section>
+      <section class="card green small">
+        <h2>JSON Schema</h2>
+        <pre>given().spec(baseSpec)
+.when().get(<span class="str">"/booking/{id}"</span>, id)
+.then()
+    .statusCode(<span class="str">200</span>)
+    .body(matchesJsonSchemaInClasspath(
+        <span class="str">"schemas/booking-schema.json"</span>));</pre>
+        <p><b>Schema проверяет:</b> required, type, format, nested structure.<br><b>Не проверяет:</b> правильное бизнес-значение firstname или допустимость дат.</p>
+      </section>
+      <section class="card">
+        <h2>Что выбрать</h2>
+        <table>
+          <tr><th>Задача</th><th>Инструмент</th></tr>
+          <tr><td>2–4 простых поля</td><td><code>then().body(...)</code></td></tr>
+          <tr><td>ID для следующего запроса</td><td><code>extract().path()</code></td></tr>
+          <tr><td>Status + headers + raw body</td><td><code>Response</code></td></tr>
+          <tr><td>Много связанных полей</td><td>DTO + AssertJ</td></tr>
+          <tr><td>Форма контракта</td><td>JSON Schema</td></tr>
+          <tr><td>Сложная коллекция</td><td>DTO/List + AssertJ extracting</td></tr>
+        </table>
+      </section>
+      <section class="card danger">
+        <h2>Слабые проверки</h2>
+        <div class="goodbad">
+          <div class="bad"><b>Плохо</b><p><code>body("id", notNullValue())</code><br>для созданного объекта.</p></div>
+          <div class="good"><b>Лучше</b><p>Извлечь id, GET по нему и сверить отправленные поля.</p></div>
+          <div class="bad"><b>Плохо</b><p>Сравнить весь JSON как строку.</p></div>
+          <div class="good"><b>Лучше</b><p>Schema + значимые поля или DTO.</p></div>
+        </div>
+      </section>
+      <section class="card warn">
+        <h2>Проверка ошибки</h2>
+        <pre>response.then()
+    .statusCode(<span class="str">400</span>)
+    .contentType(ContentType.JSON)
+    .body(<span class="str">"code"</span>, equalTo(<span class="str">"VALIDATION_ERROR"</span>))
+    .body(<span class="str">"fieldErrors.field"</span>, hasItem(<span class="str">"checkin"</span>));</pre>
+        <p>Негативный тест проверяет не только status, но и стабильный machine-readable error contract.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>REST Assured • лист 3 • ответы</span><span>Schema + бизнес-проверки дополняют друг друга, но не заменяют.</span></footer>
+</section>
+
+<!-- ЛИСТ 4 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">4/5</div>
+    <div class="title"><h1>Auth, CRUD и независимый сценарий</h1><p>Полный жизненный цикл записи Restful Booker и обязательный cleanup</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ+</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card blue tiny">
+        <h2>1. Получить token</h2>
+        <pre>String token = given()
+    .spec(baseSpec)
+    .contentType(ContentType.JSON)
+    .body(Map.of(
+        <span class="str">"username"</span>, <span class="str">"admin"</span>,
+        <span class="str">"password"</span>, <span class="str">"password123"</span>))
+.when()
+    .post(<span class="str">"/auth"</span>)
+.then()
+    .statusCode(<span class="str">200</span>)
+    .body(<span class="str">"token"</span>, not(blankString()))
+    .extract().path(<span class="str">"token"</span>);</pre>
+      </section>
+      <section class="card green tiny">
+        <h2>2. Создать и извлечь id</h2>
+        <pre>int id = given()
+    .spec(baseSpec)
+    .contentType(ContentType.JSON)
+    .body(request)
+.when()
+    .post(<span class="str">"/booking"</span>)
+.then()
+    .statusCode(<span class="str">200</span>)
+    .body(<span class="str">"booking.firstname"</span>,
+          equalTo(request.firstname()))
+    .extract().path(<span class="str">"bookingid"</span>);</pre>
+      </section>
+      <section class="card tiny">
+        <h2>3. GET → PUT → PATCH</h2>
+        <pre><span class="cm">// Подтвердить создание</span>
+BookingResponse saved = given().spec(baseSpec)
+    .get(<span class="str">"/booking/{id}"</span>, id).as(BookingResponse.class);
+assertThat(saved.firstname()).isEqualTo(request.firstname());
+
+<span class="cm">// Полная замена</span>
+given().spec(baseSpec).cookie(<span class="str">"token"</span>, token)
+    .contentType(JSON).body(fullUpdate)
+.when().put(<span class="str">"/booking/{id}"</span>, id)
+.then().statusCode(<span class="str">200</span>);
+
+<span class="cm">// Частичное изменение</span>
+given().spec(baseSpec).cookie(<span class="str">"token"</span>, token)
+    .contentType(JSON).body(Map.of(<span class="str">"lastname"</span>, <span class="str">"New"</span>))
+.when().patch(<span class="str">"/booking/{id}"</span>, id)
+.then().statusCode(<span class="str">200</span>);</pre>
+        <p>После mutation выполните GET: response на PUT/PATCH может быть правильным, а сохранение — сломанным.</p>
+      </section>
+      <section class="card warn">
+        <h2>PUT vs PATCH</h2>
+        <table>
+          <tr><th>PUT</th><td>Передайте полное представление. Проверьте все значимые поля.</td></tr>
+          <tr><th>PATCH</th><td>Передайте изменяемые поля. Проверьте изменение и сохранность остальных.</td></tr>
+        </table>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card danger small">
+        <h2>4. Cleanup в finally</h2>
+        <pre>Integer id = <span class="kw">null</span>;
+<span class="kw">try</span> {
+    id = createBooking(request);
+    verifyBooking(id, request);
+    patchBooking(id, token);
+    verifyPatch(id);
+} <span class="kw">finally</span> {
+    <span class="kw">if</span> (id != <span class="kw">null</span>) {
+        given().spec(baseSpec)
+            .cookie(<span class="str">"token"</span>, token)
+        .when()
+            .delete(<span class="str">"/booking/{id}"</span>, id);
+    }
+}</pre>
+        <p>Cleanup запускается даже после упавшей проверки. Его ошибка не должна затереть исходную причину падения.</p>
+      </section>
+      <section class="card green small">
+        <h2>5. Подтвердить удаление</h2>
+        <pre>given().spec(baseSpec)
+    .cookie(<span class="str">"token"</span>, token)
+.when()
+    .delete(<span class="str">"/booking/{id}"</span>, id)
+.then()
+    .statusCode(<span class="str">201</span>);
+
+given().spec(baseSpec)
+.when()
+    .get(<span class="str">"/booking/{id}"</span>, id)
+.then()
+    .statusCode(<span class="str">404</span>);</pre>
+      </section>
+      <section class="card blue">
+        <h2>Правила независимости</h2>
+        <ul>
+          <li>Каждый mutation-тест создаёт собственную запись.</li>
+          <li>Не берите первый id из общего <code>GET /booking</code>.</li>
+          <li>Уникальное имя помогает найти запрос в логах.</li>
+          <li>Не делайте create/update/delete отдельными зависимыми <code>@Test</code>.</li>
+          <li>Одна CRUD-цепочка допустима внутри одного end-to-end теста.</li>
+          <li>Если API eventually consistent — ждите условие с timeout, не sleep.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Негативная auth-матрица</h2>
+        <table>
+          <tr><th>Сценарий</th><th>Что проверить</th></tr>
+          <tr><td>Нет cookie</td><td>Status + error contract.</td></tr>
+          <tr><td>Неверный token</td><td>Отказ, состояние не изменилось.</td></tr>
+          <tr><td>Пустые credentials</td><td>Предсказуемая validation/auth error.</td></tr>
+          <tr><td>Обычный user</td><td>Недостаточно прав на admin action.</td></tr>
+        </table>
+      </section>
+      <section class="card warn">
+        <h2>Shared test API</h2>
+        <p>Restful Booker общий и периодически сбрасывается. Не утверждайте точный размер списка, не используйте заранее известный id и не считайте исчезновение чужой записи дефектом вашего теста.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>REST Assured • лист 4 • CRUD</span><span>Arrange собственные данные → Act → Assert → GET state → Cleanup.</span></footer>
+</section>
+
+<!-- ЛИСТ 5 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">5/5</div>
+    <div class="title"><h1>REST Assured на уровне Middle+</h1><p>Архитектура suite, диагностика, устойчивость и checklist code review</p></div>
+    <div class="level">СЛОЖНОСТЬ: MIDDLE+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card blue">
+        <h2>Разделение ответственности</h2>
+        <table>
+          <tr><th>Слой</th><th>Отвечает за</th></tr>
+          <tr><td>Test</td><td>Сценарий и ожидаемое бизнес-поведение.</td></tr>
+          <tr><td>API client</td><td>Endpoint, method, transport; возвращает Response/DTO.</td></tr>
+          <tr><td>DTO</td><td>Контракт request/response.</td></tr>
+          <tr><td>Data factory</td><td>Валидные уникальные данные и варианты.</td></tr>
+          <tr><td>Specifications</td><td>Общие HTTP-настройки и общий transport contract.</td></tr>
+          <tr><td>Assertions</td><td>Переиспользуемый доменный язык проверок.</td></tr>
+        </table>
+        <p><b>Client выполняет запрос, test определяет ожидание.</b> Не прячьте все assertions внутрь клиента.</p>
+      </section>
+      <section class="card green small">
+        <h2>Условное логирование</h2>
+        <pre>given()
+    .spec(baseSpec)
+    .log().ifValidationFails()
+.when()
+    .get(<span class="str">"/booking/{id}"</span>, id)
+.then()
+    .log().ifValidationFails()
+    .statusCode(<span class="str">200</span>);</pre>
+        <ul>
+          <li>Прикладывайте request/response в Allure при падении.</li>
+          <li>Маскируйте Authorization, Cookie, password, PII.</li>
+          <li>Логируйте correlation/request id.</li>
+          <li>Глобальный <code>log().all()</code> создаёт шум и утечки.</li>
+        </ul>
+      </section>
+      <section class="card warn">
+        <h2>Timeout, retry, eventual consistency</h2>
+        <ul>
+          <li>Задавайте connect/read timeout на уровне HTTP config.</li>
+          <li>Retry допустим для явно транзиентной инфраструктурной ошибки.</li>
+          <li>Не retry-те assertion до зелёного: это маскирует дефект.</li>
+          <li>Для async-состояния используйте polling с общим timeout и диагностикой последнего ответа.</li>
+          <li>POST может быть неидемпотентным: слепой retry создаст дубликаты.</li>
+        </ul>
+      </section>
+      <section class="card danger">
+        <h2>Признаки хрупкого теста</h2>
+        <ul>
+          <li>Порядок тестов имеет значение.</li>
+          <li>Общий изменяемый token/id/body.</li>
+          <li>Точные latency assertions на shared environment.</li>
+          <li>Длинный GPath дублирует production-алгоритм.</li>
+          <li>Десятки игнорируемых полей recursive comparison.</li>
+          <li>Cleanup отсутствует или может скрыть исходное падение.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card blue">
+        <h2>Checklist перед merge</h2>
+        <ul class="check">
+          <li>Название объясняет условие и ожидаемый результат.</li>
+          <li>Тест независим и создаёт свои данные.</li>
+          <li>Status code взят из контракта.</li>
+          <li>Проверены content type и ключевые поля.</li>
+          <li>Mutation подтверждён отдельным чтением состояния.</li>
+          <li>Негативный тест проверяет machine-readable error.</li>
+          <li>Path/query params не собираются вручную строкой.</li>
+          <li>Общие настройки вынесены в specification.</li>
+          <li>Секреты и PII не попадают в logs/Allure.</li>
+          <li>Cleanup выполняется при любом исходе.</li>
+          <li>Нет sleep, зависимости от порядка и случайного чужого id.</li>
+          <li>Падение сообщает expected, actual и контекст запроса.</li>
+        </ul>
+      </section>
+      <section class="card green">
+        <h2>Пирамида проверок одного response</h2>
+        <ol>
+          <li><b>Transport:</b> status, content type, нужные headers.</li>
+          <li><b>Contract:</b> required fields, types, schema.</li>
+          <li><b>Data:</b> ответ соответствует request/test fixture.</li>
+          <li><b>Business:</b> цены, даты, статусы, права, инварианты.</li>
+          <li><b>State:</b> повторное чтение подтверждает mutation.</li>
+        </ol>
+        <p>Не каждая проверка нужна каждому endpoint, но пропуск уровня должен быть осознанным.</p>
+      </section>
+      <section class="card warn small">
+        <h2>Быстрый шаблон диагностики падения</h2>
+        <pre><span class="str">Что ожидали:</span> PATCH меняет только lastname
+<span class="str">Что получили:</span> firstname также изменился
+<span class="str">Request:</span> method, path, safe headers, body
+<span class="str">Response:</span> status, headers, body, time
+<span class="str">State GET:</span> фактически сохранённый DTO
+<span class="str">Environment:</span> URL, build, correlation id
+<span class="str">Вывод:</span> product / test / environment defect</pre>
+      </section>
+      <section class="card">
+        <h2>Достаточный уровень middle+</h2>
+        <p>Вы не только пишете зелёный запрос, но можете:</p>
+        <ul>
+          <li>объяснить границы теста и выбранные assertions;</li>
+          <li>спроектировать переиспользуемый client/spec/DTO;</li>
+          <li>локализовать transport, contract и product defect;</li>
+          <li>сделать тест параллельным, независимым и диагностируемым;</li>
+          <li>отличить полезный retry от маскировки нестабильности;</li>
+          <li>провести code review API-теста по checklist выше.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>REST Assured • лист 5 • middle+</span><span>Хороший API-тест — независимый, строгий, читаемый и диагностируемый.</span></footer>
+</section>
+
+</body>
+</html>
