@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>JUnit 5 — шпаргалка на 5 листов A4</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #e9edf2; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #17202a; }
+    .sheet { width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 9mm 7mm; background: white; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .topbar { min-height: 18mm; border-bottom: 1.2mm solid #356b57; display: grid; grid-template-columns: 22mm 1fr auto; gap: 4mm; align-items: center; padding-bottom: 3mm; margin-bottom: 3mm; }
+    .page-no { width: 18mm; height: 14mm; border-radius: 2mm; display: flex; align-items: center; justify-content: center; background: #356b57; color: white; font-size: 18pt; font-weight: 800; }
+    .title h1 { margin: 0; font-size: 16pt; line-height: 1.05; }
+    .title p { margin: 1mm 0 0; font-size: 8.5pt; color: #52616b; }
+    .level { border: .45mm solid #356b57; border-radius: 5mm; padding: 1.6mm 3.2mm; font-size: 8.5pt; font-weight: 700; color: #356b57; white-space: nowrap; }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; align-items: start; }
+    .cols.wide-left { grid-template-columns: 1.08fr .92fr; }
+    .stack { display: grid; gap: 2.5mm; }
+    .card { border: .3mm solid #c9d4df; border-radius: 1.8mm; padding: 2.3mm 2.7mm; break-inside: avoid; }
+    .card.green { background: #f1f8f4; border-color: #9dc6aa; }
+    .card.blue { background: #f2f7fb; border-color: #9fbdd3; }
+    .card.warn { background: #fff8e8; border-color: #d8b76b; }
+    .card.danger { background: #fff2f1; border-color: #d29b96; }
+    h2 { margin: 0 0 1.5mm; font-size: 10.8pt; color: #356b57; }
+    h3 { margin: 1.2mm 0 .8mm; font-size: 9.2pt; color: #29483c; }
+    p { margin: .8mm 0; font-size: 8.3pt; line-height: 1.25; }
+    ul, ol { margin: 1mm 0 0 4.3mm; padding: 0; }
+    li { margin: .7mm 0; font-size: 8.1pt; line-height: 1.22; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: .95em; }
+    pre { margin: 1.2mm 0 0; padding: 2mm 2.2mm; background: #182620; color: #f4f7f9; border-radius: 1.4mm; font: 7.15pt/1.28 Consolas, "Courier New", monospace; white-space: pre-wrap; tab-size: 2; overflow: hidden; }
+    .small pre { font-size: 6.75pt; line-height: 1.23; }
+    .tiny pre { font-size: 6.25pt; line-height: 1.18; }
+    .kw { color: #9dd5ff; } .str { color: #b9e493; } .cm { color: #a4b0aa; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1.2mm; font-size: 7.55pt; }
+    th, td { border: .25mm solid #c9d4df; padding: 1mm 1.2mm; text-align: left; vertical-align: top; }
+    th { background: #e8f1ed; color: #295343; }
+    .goodbad { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm; }
+    .goodbad > div { padding: 1.5mm; border-radius: 1mm; }
+    .good { background: #edf7ef; } .bad { background: #fff0ef; }
+    .tag { display: inline-block; padding: .3mm 1mm; margin: .2mm; border-radius: 1mm; background: #dfeee7; font-size: 7.2pt; font-weight: 700; }
+    .footer { height: 5mm; margin-top: 2mm; padding-top: 1.2mm; border-top: .25mm solid #d7dee5; color: #65727d; display: flex; justify-content: space-between; font-size: 6.8pt; }
+    @media screen { .sheet { margin: 8mm auto; box-shadow: 0 2mm 7mm rgba(0,0,0,.17); } }
+    @media print { html, body { background: white; } .sheet { margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+
+<!-- ЛИСТ 1 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">1/5</div>
+    <div class="title"><h1>JUnit 5: уверенный старт</h1><p>Как запускается тест, Arrange–Act–Assert и основные проверки</p></div>
+    <div class="level">СЛОЖНОСТЬ: НАЧАЛЬНАЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card green">
+        <h2>Что входит в JUnit 5</h2>
+        <table>
+          <tr><th>JUnit Platform</th><td>Находит движки и связывает запуск с IDE, Maven и Gradle.</td></tr>
+          <tr><th>Jupiter API</th><td><code>@Test</code>, lifecycle, assertions, parameterized tests, extensions.</td></tr>
+          <tr><th>Jupiter Engine</th><td>Находит и выполняет тесты, написанные на Jupiter API.</td></tr>
+        </table>
+        <p>Maven Surefire обычно ищет классы <code>*Test</code>, <code>*Tests</code>, <code>Test*</code> в <code>src/test/java</code>.</p>
+      </section>
+      <section class="card blue">
+        <h2>Структура Arrange → Act → Assert</h2>
+        <pre><span class="kw">@Test</span>
+<span class="kw">void</span> discountIsApplied() {
+    <span class="cm">// Arrange: данные и зависимости</span>
+    PriceCalculator calculator = <span class="kw">new</span> PriceCalculator();
+
+    <span class="cm">// Act: одно проверяемое действие</span>
+    <span class="kw">int</span> actual = calculator.applyDiscount(100, 20);
+
+    <span class="cm">// Assert: наблюдаемый результат</span>
+    assertEquals(80, actual);
+}</pre>
+        <p>Название теста описывает поведение. Один тест — один сценарий, но связанных assertions может быть несколько.</p>
+      </section>
+      <section class="card">
+        <h2>Основные assertions</h2>
+        <pre>assertEquals(expected, actual);
+assertNotEquals(unexpected, actual);
+assertTrue(condition);    assertFalse(condition);
+assertNull(value);        assertNotNull(value);
+assertSame(expectedRef, actualRef);
+assertArrayEquals(expectedArray, actualArray);</pre>
+        <p><b>Порядок:</b> у JUnit сначала expected, затем actual. Сообщение передаётся последним аргументом.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card warn">
+        <h2><code>assertAll</code>: связанные поля</h2>
+        <pre>assertAll(<span class="str">"Поля пользователя"</span>,
+    () -&gt; assertEquals(<span class="str">"Ivan"</span>, user.name()),
+    () -&gt; assertEquals(28, user.age()),
+    () -&gt; assertTrue(user.active())
+);</pre>
+        <p>Обычный assertion останавливает тест на первой ошибке. <code>assertAll</code> выполняет все переданные лямбды и собирает связанные расхождения в один отчёт.</p>
+      </section>
+      <section class="card">
+        <h2>Сообщения об ошибках</h2>
+        <pre>assertEquals(expected, actual,
+    () -&gt; <span class="str">"Цена заказа "</span> + orderId);</pre>
+        <p><code>Supplier&lt;String&gt;</code> строит сообщение только при падении. Добавляйте бизнес-контекст, а не повтор expected/actual.</p>
+      </section>
+      <section class="card danger">
+        <h2>Частые ошибки</h2>
+        <ul>
+          <li>Перепутаны expected и actual.</li>
+          <li><code>assertTrue(expected.equals(actual))</code> вместо типового <code>assertEquals</code>.</li>
+          <li>Проверяется приватная реализация, а не результат для пользователя.</li>
+          <li>Один тест проверяет несколько несвязанных сценариев.</li>
+          <li>Есть действие, но нет meaningful assertion.</li>
+          <li>Тест зависит от порядка выполнения соседних тестов.</li>
+        </ul>
+      </section>
+      <section class="card green small">
+        <h2>Минимальный запуск</h2>
+        <pre><span class="cm"># все тесты</span>
+./mvnw test
+
+<span class="cm"># один класс / один метод</span>
+./mvnw -Dtest=JUnitTasksTest test
+./mvnw -Dtest=JUnitTasksTest#task01_basicAssertionsAndAssertAll test</pre>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>JUnit 5 • лист 1 • начальный</span><span>Подготовьте данные, выполните действие, проверьте наблюдаемый результат.</span></footer>
+</section>
+
+<!-- ЛИСТ 2 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">2/5</div>
+    <div class="title"><h1>Lifecycle и параметризация</h1><p>Изоляция состояния, ValueSource, CsvSource и MethodSource</p></div>
+    <div class="level">СЛОЖНОСТЬ: БАЗОВАЯ+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card green">
+        <h2>Жизненный цикл теста</h2>
+        <table>
+          <tr><th><code>@BeforeAll</code></th><td>Один раз до всех тестов класса.</td></tr>
+          <tr><th><code>@BeforeEach</code></th><td>Перед каждым тестом: новая fixture.</td></tr>
+          <tr><th><code>@AfterEach</code></th><td>После каждого теста, даже упавшего.</td></tr>
+          <tr><th><code>@AfterAll</code></th><td>Один раз после класса.</td></tr>
+        </table>
+        <pre>ShoppingCart cart;
+
+<span class="kw">@BeforeEach</span>
+<span class="kw">void</span> setUp() {
+    cart = <span class="kw">new</span> ShoppingCart();
+}</pre>
+        <p>По умолчанию JUnit создаёт новый экземпляр тестового класса на каждый тест. Всё равно явно обновляйте изменяемую fixture в <code>@BeforeEach</code>.</p>
+      </section>
+      <section class="card danger">
+        <h2>Изоляция важнее удобства</h2>
+        <div class="goodbad">
+          <div class="bad"><b>Плохо</b><p>Тест B рассчитывает, что тест A уже создал данные.</p></div>
+          <div class="good"><b>Хорошо</b><p>Каждый тест сам создаёт данные и очищает свои ресурсы.</p></div>
+        </div>
+        <p><code>@TestMethodOrder</code> не лечит зависимость от состояния — он только маскирует её.</p>
+      </section>
+      <section class="card blue small">
+        <h2><code>@ValueSource</code>: один простой аргумент</h2>
+        <pre><span class="kw">@ParameterizedTest</span>(name = <span class="str">"id={0}"</span>)
+<span class="kw">@ValueSource</span>(ints = {1, 2, 10, 999})
+<span class="kw">void</span> positiveIdIsValid(<span class="kw">int</span> id) {
+    assertTrue(id &gt; 0);
+}</pre>
+        <p>Поддерживает строки, числа, boolean, char и Class. Для null/пустых значений есть <code>@NullSource</code>, <code>@EmptySource</code>, <code>@NullAndEmptySource</code>.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card warn small">
+        <h2><code>@CsvSource</code>: таблица простых значений</h2>
+        <pre><span class="kw">@ParameterizedTest</span>(name = <span class="str">"{0} - {1}% = {2}"</span>)
+<span class="kw">@CsvSource</span>({
+    <span class="str">"100, 10, 90"</span>,
+    <span class="str">"250, 20, 200"</span>,
+    <span class="str">"80, 100, 0"</span>
+})
+<span class="kw">void</span> discountCases(<span class="kw">int</span> price, <span class="kw">int</span> discount,
+                   <span class="kw">int</span> expected) {
+    assertEquals(expected,
+        calculator.priceAfterDiscount(price, discount));
+}</pre>
+        <p>Хорош для небольшой читаемой таблицы. Следите за преобразованием типов, кавычками, null и разделителями.</p>
+      </section>
+      <section class="card green small">
+        <h2><code>@MethodSource</code>: объекты и сложные случаи</h2>
+        <pre><span class="kw">static</span> Stream&lt;Arguments&gt; orderCases() {
+    <span class="kw">return</span> Stream.of(
+        Arguments.of(<span class="kw">new</span> Order(List.of()), 0),
+        Arguments.of(<span class="kw">new</span> Order(List.of(10, 20)), 30)
+    );
+}
+
+<span class="kw">@ParameterizedTest</span>(name = <span class="str">"order #{index} → {1}"</span>)
+<span class="kw">@MethodSource</span>(<span class="str">"orderCases"</span>)
+<span class="kw">void</span> total(Order order, <span class="kw">int</span> expected) {
+    assertEquals(expected, order.total());
+}</pre>
+        <p>Provider обычно <code>static</code> и возвращает <code>Stream&lt;Arguments&gt;</code>. При <code>PER_CLASS</code> может быть нестатическим.</p>
+      </section>
+      <section class="card">
+        <h2>Как выбрать source</h2>
+        <table>
+          <tr><th>Данные</th><th>Источник</th></tr>
+          <tr><td>Один int/String</td><td><code>@ValueSource</code></td></tr>
+          <tr><td>Несколько простых колонок</td><td><code>@CsvSource</code></td></tr>
+          <tr><td>Enum</td><td><code>@EnumSource</code></td></tr>
+          <tr><td>DTO, коллекции, сложная подготовка</td><td><code>@MethodSource</code></td></tr>
+          <tr><td>Переиспользуемый provider</td><td><code>@ArgumentsSource</code></td></tr>
+        </table>
+      </section>
+      <section class="card warn">
+        <h2>Параметризация не заменяет сценарии</h2>
+        <p>Объединяйте случаи с одинаковой логикой. Если подготовка, действие или ожидаемое поведение различаются — отдельные тесты читаются лучше универсального метода с ветвлениями.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>JUnit 5 • лист 2 • базовый+</span><span>Каждый запуск получает независимую fixture и понятный набор данных.</span></footer>
+</section>
+
+<!-- ЛИСТ 3 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">3/5</div>
+    <div class="title"><h1>Исключения, время и окружение</h1><p>assertThrows, timeout, assumptions и надёжный cleanup</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card green">
+        <h2>Проверка исключения</h2>
+        <pre>IllegalArgumentException error = assertThrows(
+    IllegalArgumentException.class,
+    () -&gt; calculator.priceAfterDiscount(100, 101)
+);
+
+assertEquals(<span class="str">"discount must be between 0 and 100"</span>,
+             error.getMessage());</pre>
+        <p><code>assertThrows</code> возвращает пойманное исключение, поэтому можно проверить message, cause и дополнительные поля. Ручной <code>try/catch</code> с boolean-флагом не нужен.</p>
+      </section>
+      <section class="card">
+        <h2>Тип исключения</h2>
+        <table>
+          <tr><th><code>assertThrows(Base.class)</code></th><td>Принимает Base и любой подкласс.</td></tr>
+          <tr><th><code>assertThrowsExactly(Base.class)</code></th><td>Требует строго Base.</td></tr>
+          <tr><th><code>assertDoesNotThrow(...)</code></th><td>Контракт — действие не падает; может вернуть результат.</td></tr>
+        </table>
+        <p>Выбирайте точность по контракту. Слишком общий <code>Exception.class</code> способен принять неправильный дефект.</p>
+      </section>
+      <section class="card warn small">
+        <h2>Timeout</h2>
+        <pre>assertTimeout(Duration.ofMillis(300),
+    () -&gt; calculator.slowOperation());
+
+String result = assertTimeout(Duration.ofMillis(300),
+    () -&gt; calculator.slowOperation());</pre>
+        <p><code>assertTimeout</code> ждёт завершения и затем сравнивает время. Код выполняется в текущем потоке.</p>
+        <pre>assertTimeoutPreemptively(Duration.ofMillis(300), action);</pre>
+        <p>Preemptive-вариант запускает действие отдельно и пытается прервать его. Это опасно для <code>ThreadLocal</code>, транзакций и security context.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card blue">
+        <h2><code>@Timeout</code> и <code>assertTimeout</code></h2>
+        <table>
+          <tr><th><code>@Timeout(1)</code></th><td>Защитный предел метода/класса. Удобен от зависаний.</td></tr>
+          <tr><th><code>assertTimeout(...)</code></th><td>Явная часть контракта конкретной операции.</td></tr>
+        </table>
+        <p>Можно использовать оба: assertion проверяет требование 300 мс, аннотация в 1 секунду страхует весь тест.</p>
+      </section>
+      <section class="card green">
+        <h2>Assumptions: тест неприменим</h2>
+        <pre>String env = System.getProperty(<span class="str">"test.env"</span>, <span class="str">"local"</span>);
+
+assumeTrue(<span class="str">"local"</span>.equals(env));
+
+assertEquals(<span class="str">"local-result"</span>, service.call());</pre>
+        <p>Если assumption ложна, тест помечается <b>skipped</b>, а не passed. Это подходит для ОС, окружения или доступности внешней системы — не для бизнес-правил.</p>
+      </section>
+      <section class="card danger">
+        <h2>Не путайте assumption и assertion</h2>
+        <ul>
+          <li><b>Assumption:</b> «этот тест можно выполнять здесь?»</li>
+          <li><b>Assertion:</b> «система повела себя правильно?»</li>
+        </ul>
+        <p>Если неверная бизнес-цена приводит к skipped, дефект исчезает из отчёта. Это должна быть ошибка assertion.</p>
+      </section>
+      <section class="card warn">
+        <h2>Cleanup должен сработать при падении</h2>
+        <pre><span class="kw">@AfterEach</span>
+<span class="kw">void</span> cleanUp() {
+    repository.delete(createdId);
+}</pre>
+        <p>Для локального ресурса также подходят <code>try/finally</code> и <code>try-with-resources</code>. Cleanup не должен скрывать исходную ошибку теста.</p>
+      </section>
+      <section class="card">
+        <h2>Диагностика зависшего теста</h2>
+        <ol>
+          <li>Определите, где зависание: setup, действие, assertion или cleanup.</li>
+          <li>Сохраните method, URL, correlation id и безопасные параметры.</li>
+          <li>Различите медленный продукт и ошибочный лимит теста.</li>
+          <li>Не лечите нестабильность бесконечным увеличением timeout.</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>JUnit 5 • лист 3 • средний</span><span>Проверяйте тип ошибки, осознанный лимит времени и применимость окружения.</span></footer>
+</section>
+
+<!-- ЛИСТ 4 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">4/5</div>
+    <div class="title"><h1>Организация и расширение</h1><p>Nested-контексты, dynamic tests, display names, tags и extensions</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card green small">
+        <h2><code>@Nested</code>: контекст сценария</h2>
+        <pre><span class="kw">@Nested</span>
+<span class="kw">@DisplayName</span>(<span class="str">"Пустая корзина"</span>)
+<span class="kw">class</span> EmptyCart {
+    <span class="kw">@Test</span>
+    <span class="kw">void</span> totalIsZero() {
+        assertEquals(0, cart.total());
+    }
+}
+
+<span class="kw">@Nested</span>
+<span class="kw">class</span> FilledCart {
+    <span class="kw">@BeforeEach</span>
+    <span class="kw">void</span> addItems() { cart.add(10); cart.add(20); }
+
+    <span class="kw">@Test</span>
+    <span class="kw">void</span> sumsItems() { assertEquals(30, cart.total()); }
+}</pre>
+        <p>Nested-класс группирует тесты общей бизнес-предпосылкой и может иметь собственный <code>@BeforeEach</code>.</p>
+      </section>
+      <section class="card blue">
+        <h2>Понятные имена</h2>
+        <pre><span class="kw">@DisplayName</span>(<span class="str">"Скидка не может превышать 100%"</span>)
+<span class="kw">@Test</span>
+<span class="kw">void</span> excessiveDiscountIsRejected() { ... }
+
+<span class="kw">@ParameterizedTest</span>(name = <span class="str">"[{index}] {0} → {1}"</span>)</pre>
+        <p>Имя в отчёте должно позволять понять сценарий без чтения тела и быстро найти проблемный набор данных.</p>
+      </section>
+      <section class="card warn small">
+        <h2>Dynamic tests</h2>
+        <pre><span class="kw">@TestFactory</span>
+Stream&lt;DynamicTest&gt; absoluteValues() {
+    <span class="kw">return</span> Stream.of(-2, -1, 0, 1, 2)
+        .map(value -&gt; dynamicTest(
+            <span class="str">"abs("</span> + value + <span class="str">") >= 0"</span>,
+            () -&gt; assertTrue(Math.abs(value) &gt;= 0)));
+}</pre>
+        <p>Factory возвращает тесты, а не выполняет assertions сама. Для каждого generated test не вызывается отдельный <code>@BeforeEach</code>.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card danger">
+        <h2>Dynamic или parameterized?</h2>
+        <table>
+          <tr><th>Parameterized</th><td>Одна тестовая логика и таблица входов; обычный lifecycle на invocation.</td></tr>
+          <tr><th>Dynamic</th><td>Количество/структура тестов формируются во время выполнения.</td></tr>
+        </table>
+        <p>Для обычной таблицы примеров выбирайте <code>@ParameterizedTest</code>. Dynamic нужен, когда тесты действительно генерируются.</p>
+      </section>
+      <section class="card green">
+        <h2>Tags и выбор набора</h2>
+        <pre><span class="kw">@Tag</span>(<span class="str">"smoke"</span>)
+<span class="kw">@Test</span>
+<span class="kw">void</span> serviceIsAvailable() { ... }</pre>
+        <span class="tag">smoke</span><span class="tag">regression</span><span class="tag">api</span><span class="tag">ui</span><span class="tag">slow</span>
+        <p>Теги описывают назначение набора, а не случайные детали. Фильтрацию настраивают Surefire/Gradle/IDE.</p>
+      </section>
+      <section class="card warn">
+        <h2><code>@Disabled</code></h2>
+        <p>Отключённый тест не проверяет продукт. В рабочем проекте указывайте причину и задачу на восстановление:</p>
+        <pre><span class="kw">@Disabled</span>(<span class="str">"BUG-142: сервис возвращает 500"</span>)</pre>
+        <p>В учебных заготовках пустой <code>@Disabled</code> служит переключателем текущего задания.</p>
+      </section>
+      <section class="card blue small">
+        <h2>Extensions</h2>
+        <pre><span class="kw">@ExtendWith</span>(TimingExtension.class)
+<span class="kw">class</span> ServiceTest { ... }
+
+<span class="kw">class</span> TimingExtension
+        <span class="kw">implements</span> BeforeEachCallback,
+                   AfterEachCallback { ... }</pre>
+        <p>Возможности: lifecycle callbacks, <code>ParameterResolver</code>, <code>TestWatcher</code>, execution conditions, обработка ошибок.</p>
+      </section>
+      <section class="card">
+        <h2>Что прятать в extension</h2>
+        <ul>
+          <li>Логирование и измерение времени.</li>
+          <li>Выдачу инфраструктурных объектов.</li>
+          <li>Скриншот/логи после падения.</li>
+          <li>Технический cleanup.</li>
+        </ul>
+        <p>Не прячьте бизнес-действие и ключевые assertions: тест должен оставаться читаемым.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>JUnit 5 • лист 4 • средний+</span><span>Структура отчёта должна помогать найти сценарий и причину падения.</span></footer>
+</section>
+
+<!-- ЛИСТ 5 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">5/5</div>
+    <div class="title"><h1>JUnit в рабочем проекте</h1><p>Архитектура, устойчивость, диагностика и checklist уровня middle+</p></div>
+    <div class="level">СЛОЖНОСТЬ: MIDDLE+</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card green">
+        <h2>Пирамида ответственности теста</h2>
+        <table>
+          <tr><th>Fixture</th><td>Минимальные данные и зависимости, нужные сценарию.</td></tr>
+          <tr><th>Action</th><td>Одно наблюдаемое бизнес-действие.</td></tr>
+          <tr><th>Assertions</th><td>Строгий контракт результата и значимых эффектов.</td></tr>
+          <tr><th>Cleanup</th><td>Удаление созданного независимо от исхода assertion.</td></tr>
+          <tr><th>Diagnostics</th><td>Данные, достаточные для воспроизведения падения.</td></tr>
+        </table>
+      </section>
+      <section class="card blue">
+        <h2>Наблюдаемое поведение</h2>
+        <div class="goodbad">
+          <div class="bad"><b>Хрупко</b><p>Проверять private-метод, количество внутренних шагов и случайный порядок.</p></div>
+          <div class="good"><b>Устойчиво</b><p>Проверять результат, публичный контракт и значимый внешний эффект.</p></div>
+        </div>
+        <p>Interaction verification через Mockito оправдана, только если сам вызов зависимости входит в контракт.</p>
+      </section>
+      <section class="card warn">
+        <h2>Повторяемые данные</h2>
+        <ul>
+          <li>Создавайте уникальные данные, если тесты идут параллельно.</li>
+          <li>Сохраняйте seed/значение случайных данных в отчёт.</li>
+          <li>Не используйте текущее время без Clock или допустимого диапазона.</li>
+          <li>Не полагайтесь на заранее существующую запись.</li>
+          <li>Каждый тест очищает только созданные им ресурсы.</li>
+        </ul>
+      </section>
+      <section class="card danger">
+        <h2>Flaky-тест — это дефект</h2>
+        <p>Retry допустим как временная диагностическая мера, но не как постоянная маскировка гонки, общего состояния, неправильного ожидания или нестабильного окружения.</p>
+        <p>Сначала классифицируйте: product defect, test defect, data defect или environment defect.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card green">
+        <h2>Checklist перед review</h2>
+        <ol>
+          <li>Имя описывает условие и ожидаемое поведение.</li>
+          <li>Тест выполняет один самостоятельный сценарий.</li>
+          <li>Fixture минимальна и создаётся независимо.</li>
+          <li>Нет зависимости от порядка запуска.</li>
+          <li>Выбран подходящий assertion и не перепутаны expected/actual.</li>
+          <li>Parameterized source соответствует типу данных.</li>
+          <li>Исключение проверяется через <code>assertThrows</code>.</li>
+          <li>Timeout обоснован и не маскирует проблему.</li>
+          <li>Cleanup выполняется после падения.</li>
+          <li>Отчёт содержит данные для воспроизведения.</li>
+        </ol>
+      </section>
+      <section class="card warn small">
+        <h2>Алгоритм разбора падения</h2>
+        <ol>
+          <li>Прочитайте имя сценария, expected, actual и stack trace.</li>
+          <li>Проверьте входные данные и окружение запуска.</li>
+          <li>Запустите один метод независимо от остальных.</li>
+          <li>Определите, упали setup, action, assertion или cleanup.</li>
+          <li>Сравните контракт с фактическим поведением продукта.</li>
+          <li>Зафиксируйте воспроизводимый минимальный пример.</li>
+        </ol>
+        <pre>./mvnw -Dtest=ClassName#methodName test</pre>
+      </section>
+      <section class="card blue">
+        <h2>Когда какой тест</h2>
+        <table>
+          <tr><th>Один пример</th><td><code>@Test</code></td></tr>
+          <tr><th>Одна логика, много данных</th><td><code>@ParameterizedTest</code></td></tr>
+          <tr><th>Генерация структуры в runtime</th><td><code>@TestFactory</code></td></tr>
+          <tr><th>Общий бизнес-контекст</th><td><code>@Nested</code></td></tr>
+          <tr><th>Общая техническая механика</th><td>Extension</td></tr>
+        </table>
+      </section>
+      <section class="card">
+        <h2>Достаточный уровень middle+</h2>
+        <p>Вы можете объяснить lifecycle, выбрать источник параметров, проверить исключение и время, организовать независимые сценарии, обеспечить cleanup и локализовать причину падения без привязки теста к деталям реализации.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>JUnit 5 • лист 5 • middle+</span><span>Хороший тест независимый, строгий, воспроизводимый и диагностируемый.</span></footer>
+</section>
+
+</body>
+</html>
