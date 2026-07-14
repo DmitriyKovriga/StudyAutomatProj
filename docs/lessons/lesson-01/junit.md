@@ -101,6 +101,29 @@ static Stream<Arguments> prices() {
 }
 ```
 
+Как `@MethodSource` связывает provider и тест:
+
+```java
+static Stream<Arguments> orderCases() {
+    return Stream.of(
+        Arguments.of(new Order(List.of()), 0),
+        Arguments.of(new Order(List.of(10, 20)), 30)
+    );
+}
+
+@ParameterizedTest
+@MethodSource("orderCases")
+void orderTotal(Order order, int expectedTotal) {
+    assertEquals(expectedTotal, order.total());
+}
+```
+
+- `@MethodSource("orderCases")` находит метод `orderCases`;
+- каждый `Arguments.of(...)` является одним запуском теста;
+- первое значение передаётся в `Order order`, второе — в `int expectedTotal`;
+- два набора `Arguments` означают два отдельных запуска `orderTotal`;
+- пустой `Stream.empty()` является ошибкой конфигурации: JUnit нечего запускать.
+
 ## 6. Исключения и timeout
 
 ```java
@@ -112,6 +135,8 @@ assertEquals("id must be positive", error.getMessage());
 ```
 
 `assertThrowsExactly` требует точный тип. `assertDoesNotThrow` полезен, когда отсутствие исключения и есть контракт.
+
+Проверка исключения — обычный негативный тест. Она нужна, когда система обязана отклонить неверные данные: скидку больше 100%, пустой обязательный параметр, неправильный пароль или операцию без прав. Если не проверить такой сценарий, тесты подтверждают только успешный путь и ничего не говорят о защите от некорректного ввода.
 
 ```java
 assertTimeout(Duration.ofMillis(200), () -> service.calculate());
@@ -146,20 +171,21 @@ assumeTrue("CI".equals(System.getenv("ENV")));
 
 Это подходит для проверки ОС, переменной окружения или доступности внешней системы. Не используйте assumptions вместо бизнес-проверок.
 
-## 9. Dynamic tests
+## 9. Имена и теги тестов
 
-`@TestFactory` создаёт тесты во время выполнения:
+`@DisplayName` делает сценарий понятным в отчёте, а `@Tag` позволяет запускать выбранные группы:
 
 ```java
-@TestFactory
-Stream<DynamicTest> generatedTests() {
-    return Stream.of(1, 2, 3)
-        .map(value -> dynamicTest("value=" + value,
-            () -> assertTrue(value > 0)));
+@Test
+@DisplayName("Скидка 25% применяется корректно")
+@Tag("smoke")
+void discountIsApplied() {
+    int actual = calculator.priceAfterDiscount(200, 25);
+    assertEquals(150, actual);
 }
 ```
 
-У dynamic tests нет отдельного `@BeforeEach` на каждый сгенерированный элемент. Для обычных таблиц примеров чаще понятнее `@ParameterizedTest`.
+Часто используемые теги: `smoke`, `regression`, `api`, `ui`, `slow`. Тег должен описывать назначение набора, а не случайную деталь реализации.
 
 ## 10. Extensions
 
@@ -205,6 +231,6 @@ Extensions подходят для логирования, выдачи тест
 7. Проверка ограничения времени выполнения.
 8. Группировка контекстов через `@Nested`.
 9. Условный запуск через assumptions.
-10. Генерация набора проверок через `@TestFactory`.
+10. Читаемое имя теста и включение сценария в smoke-набор через `@DisplayName` и `@Tag`.
 
 После выполнения вы должны уметь объяснить, почему выбран конкретный source, где должен находиться cleanup и чем `assertTimeout` отличается от `assertTimeoutPreemptively`.

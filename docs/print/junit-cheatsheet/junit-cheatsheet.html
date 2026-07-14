@@ -321,7 +321,7 @@ assertEquals(<span class="str">"local-result"</span>, service.call());</pre>
 <section class="sheet">
   <header class="topbar">
     <div class="page-no">4/5</div>
-    <div class="title"><h1>Организация и расширение</h1><p>Nested-контексты, dynamic tests, display names, tags и extensions</p></div>
+    <div class="title"><h1>Организация и расширение</h1><p>Nested-контексты, display names, tags и extensions</p></div>
     <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ+</div>
   </header>
   <main class="content cols">
@@ -357,25 +357,27 @@ assertEquals(<span class="str">"local-result"</span>, service.call());</pre>
         <p>Имя в отчёте должно позволять понять сценарий без чтения тела и быстро найти проблемный набор данных.</p>
       </section>
       <section class="card warn small">
-        <h2>Dynamic tests</h2>
-        <pre><span class="kw">@TestFactory</span>
-Stream&lt;DynamicTest&gt; absoluteValues() {
-    <span class="kw">return</span> Stream.of(-2, -1, 0, 1, 2)
-        .map(value -&gt; dynamicTest(
-            <span class="str">"abs("</span> + value + <span class="str">") >= 0"</span>,
-            () -&gt; assertTrue(Math.abs(value) &gt;= 0)));
+        <h2>Практический smoke-тест</h2>
+        <pre><span class="kw">@Test</span>
+<span class="kw">@DisplayName</span>(<span class="str">"Скидка 25% применяется корректно"</span>)
+<span class="kw">@Tag</span>(<span class="str">"smoke"</span>)
+<span class="kw">void</span> discountIsApplied() {
+    <span class="kw">int</span> actual = calculator
+        .priceAfterDiscount(200, 25);
+
+    assertEquals(150, actual);
 }</pre>
-        <p>Factory возвращает тесты, а не выполняет assertions сама. Для каждого generated test не вызывается отдельный <code>@BeforeEach</code>.</p>
+        <p><code>@DisplayName</code> улучшает отчёт, а <code>@Tag</code> включает сценарий в выбранный тестовый набор.</p>
       </section>
     </div>
     <div class="stack">
       <section class="card danger">
-        <h2>Dynamic или parameterized?</h2>
+        <h2>Один тест или parameterized?</h2>
         <table>
-          <tr><th>Parameterized</th><td>Одна тестовая логика и таблица входов; обычный lifecycle на invocation.</td></tr>
-          <tr><th>Dynamic</th><td>Количество/структура тестов формируются во время выполнения.</td></tr>
+          <tr><th><code>@Test</code></th><td>Один самостоятельный бизнес-сценарий с понятным именем.</td></tr>
+          <tr><th><code>@ParameterizedTest</code></th><td>Одна логика и несколько наборов входных данных.</td></tr>
         </table>
-        <p>Для обычной таблицы примеров выбирайте <code>@ParameterizedTest</code>. Dynamic нужен, когда тесты действительно генерируются.</p>
+        <p>Не объединяйте разные сценарии только ради уменьшения количества методов.</p>
       </section>
       <section class="card green">
         <h2>Tags и выбор набора</h2>
@@ -492,7 +494,7 @@ Stream&lt;DynamicTest&gt; absoluteValues() {
         <table>
           <tr><th>Один пример</th><td><code>@Test</code></td></tr>
           <tr><th>Одна логика, много данных</th><td><code>@ParameterizedTest</code></td></tr>
-          <tr><th>Генерация структуры в runtime</th><td><code>@TestFactory</code></td></tr>
+          <tr><th>Выбор smoke/regression-набора</th><td><code>@Tag</code></td></tr>
           <tr><th>Общий бизнес-контекст</th><td><code>@Nested</code></td></tr>
           <tr><th>Общая техническая механика</th><td>Extension</td></tr>
         </table>

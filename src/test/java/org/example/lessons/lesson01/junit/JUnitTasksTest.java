@@ -1,10 +1,8 @@
 package org.example.lessons.lesson01.junit;
 
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,7 +17,6 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 /**
  * Урок 1 / JUnit 5.
@@ -73,7 +70,6 @@ class JUnitTasksTest {
         // TODO: Вычислите boolean-условие, подтверждающее, что параметр id положительный,
         //       для всех значений из @ValueSource.
         boolean valid = false;
-
         assertTrue(valid, () -> "id должен быть положительным: " + id);
     }
 
@@ -93,29 +89,28 @@ class JUnitTasksTest {
         assertEquals(expected, actual);
     }
 
-    static Stream<Arguments> orderCases() {
-        // TODO task05: Верните минимум три набора Arguments.of(Order, expectedTotal),
-        //              обязательно включив заказ с несколькими позициями и пустой заказ.
-        return Stream.empty();
-    }
-
     @ParameterizedTest(name = "order #{index} -> {1}")
     @MethodSource("orderCases")
     @Disabled
     void task05_methodSource(Order order, int expectedTotal) {
+        // TODO: Реализуйте метод orderCases() под этим тестом: верните минимум три набора
+        //       Arguments.of(Order, expectedTotal), включая пустой заказ и заказ
+        //       с несколькими позициями. Подготовленный assertEquals менять не нужно.
         assertEquals(expectedTotal, order.total());
+    }
+
+    static Stream<Arguments> orderCases() {
+        return Stream.empty();
     }
 
     @Test
     @Disabled
     void task06_exceptionTypeAndMessage() {
         // TODO: Через assertThrows вызовите calculator.priceAfterDiscount(100, 101) и сохраните
-        //       полученное исключение в error для подготовленных проверок типа и сообщения.
+        //       полученное исключение в error для подготовленной проверки сообщения.
         IllegalArgumentException error = null;
 
-        assertAll(
-                () -> assertNotNull(error),
-                () -> assertEquals("discount must be between 0 and 100", error.getMessage()));
+        assertEquals("discount must be between 0 and 100", error.getMessage());
     }
 
     @Test
@@ -155,22 +150,22 @@ class JUnitTasksTest {
     @Test
     @Disabled
     void task09_assumptions() {
-        String environment = System.getProperty("test.env", "local");
+        boolean localEnvironmentIsAvailable = false;
 
-        // TODO: Через assumeTrue разрешите продолжение теста только при environment == "local",
-        //       не заменяя assumption обычным assertion.
+        // TODO: Через assumeTrue продолжите тест только при localEnvironmentIsAvailable == true;
 
-        assertEquals("local", environment);
+        assertTrue(localEnvironmentIsAvailable);
     }
 
-    @TestFactory
+    @Test
     @Disabled
-    Stream<DynamicTest> task10_dynamicTests() {
-        List<Integer> values = List.of(-2, -1, 0, 1, 2);
+    void task10_displayNameAndTag() {
+        // TODO: Добавьте тесту @DisplayName("Скидка 25% применяется корректно") и @Tag("smoke"),
+        //       затем вызовите calculator.priceAfterDiscount(200, 25) и сохраните результат
+        //       в actual для подготовленной проверки.
+        int actual = -1;
 
-        // TODO: Преобразуйте каждый элемент values в DynamicTest с понятным именем
-        //       и проверкой Math.abs(value) >= 0, вернув итоговый Stream<DynamicTest>.
-        return Stream.empty();
+        assertEquals(150, actual);
     }
 
     record User(String name, int age, boolean active) {
