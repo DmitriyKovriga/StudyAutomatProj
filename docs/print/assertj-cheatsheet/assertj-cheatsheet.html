@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>AssertJ — шпаргалка на 5 листов A4</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #e9edf2; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #17202a; }
+    .sheet { width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 9mm 7mm; background: white; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .topbar { min-height: 18mm; border-bottom: 1.2mm solid #5b3f8c; display: grid; grid-template-columns: 22mm 1fr auto; gap: 4mm; align-items: center; padding-bottom: 3mm; margin-bottom: 3mm; }
+    .page-no { width: 18mm; height: 14mm; border-radius: 2mm; display: flex; align-items: center; justify-content: center; background: #5b3f8c; color: white; font-size: 18pt; font-weight: 800; }
+    .title h1 { margin: 0; font-size: 16pt; line-height: 1.05; }
+    .title p { margin: 1mm 0 0; font-size: 8.5pt; color: #52616b; }
+    .level { border: .45mm solid #5b3f8c; border-radius: 5mm; padding: 1.6mm 3.2mm; font-size: 8.5pt; font-weight: 700; color: #5b3f8c; white-space: nowrap; }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; align-items: start; }
+    .cols.wide-left { grid-template-columns: 1.08fr .92fr; }
+    .stack { display: grid; gap: 2.5mm; }
+    .card { border: .3mm solid #c9d4df; border-radius: 1.8mm; padding: 2.3mm 2.7mm; break-inside: avoid; }
+    .card.purple { background: #f6f3fb; border-color: #b9a5d5; }
+    .card.green { background: #f2f8f4; border-color: #9dc6aa; }
+    .card.warn { background: #fff8e8; border-color: #d8b76b; }
+    .card.danger { background: #fff2f1; border-color: #d29b96; }
+    h2 { margin: 0 0 1.5mm; font-size: 10.8pt; color: #5b3f8c; }
+    h3 { margin: 1.2mm 0 .8mm; font-size: 9.2pt; color: #3d3152; }
+    p { margin: .8mm 0; font-size: 8.3pt; line-height: 1.25; }
+    ul, ol { margin: 1mm 0 0 4.3mm; padding: 0; }
+    li { margin: .7mm 0; font-size: 8.1pt; line-height: 1.22; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: .95em; }
+    pre { margin: 1.2mm 0 0; padding: 2mm 2.2mm; background: #1f1b29; color: #f4f7f9; border-radius: 1.4mm; font: 7.15pt/1.28 Consolas, "Courier New", monospace; white-space: pre-wrap; tab-size: 2; overflow: hidden; }
+    .small pre { font-size: 6.75pt; line-height: 1.23; }
+    .tiny pre { font-size: 6.25pt; line-height: 1.18; }
+    .kw { color: #a8d8ff; } .str { color: #b9e493; } .cm { color: #aaa4b5; }
+    .inline { background: #eeeaf4; padding: .15mm .7mm; border-radius: .6mm; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1.2mm; font-size: 7.55pt; }
+    th, td { border: .25mm solid #c9d4df; padding: 1mm 1.2mm; text-align: left; vertical-align: top; }
+    th { background: #eee9f5; color: #49336d; }
+    .goodbad { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm; }
+    .goodbad > div { padding: 1.5mm; border-radius: 1mm; }
+    .good { background: #edf7ef; } .bad { background: #fff0ef; }
+    .tag { display: inline-block; padding: .3mm 1mm; margin: .2mm; border-radius: 1mm; background: #e8e0f3; font-size: 7.2pt; font-weight: 700; }
+    .footer { height: 5mm; margin-top: 2mm; padding-top: 1.2mm; border-top: .25mm solid #d7dee5; color: #65727d; display: flex; justify-content: space-between; font-size: 6.8pt; }
+    @media screen { .sheet { margin: 8mm auto; box-shadow: 0 2mm 7mm rgba(0,0,0,.17); } }
+    @media print { html, body { background: white; } .sheet { margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+
+<!-- ЛИСТ 1 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">1/5</div>
+    <div class="title"><h1>AssertJ: уверенный старт</h1><p>Структура fluent-проверки, строки, числа и понятные сообщения</p></div>
+    <div class="level">СЛОЖНОСТЬ: НАЧАЛЬНАЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card purple">
+        <h2>Главная модель: actual → описание → проверки</h2>
+        <pre><span class="kw">import static</span> org.assertj.core.api.Assertions.assertThat;
+
+assertThat(actualPrice)
+    .as(<span class="str">"Цена заказа %s"</span>, orderId)
+    .isPositive()
+    .isBetween(100, 200)
+    .isEqualTo(180);</pre>
+        <p><code>assertThat(actual)</code> выбирает assertion по типу actual. Поэтому IDE предлагает разные методы для <code>String</code>, числа, списка, <code>Optional</code> и т. д.</p>
+      </section>
+      <section class="card">
+        <h2>Строки</h2>
+        <pre>assertThat(orderNumber)
+    .isNotBlank()
+    .startsWith(<span class="str">"order-"</span>)
+    .endsWith(<span class="str">"00042"</span>)
+    .contains(<span class="str">"2026"</span>)
+    .doesNotContain(<span class="str">"error"</span>)
+    .matches(<span class="str">"order-\\d{4}-\\d{5}"</span>);</pre>
+        <table>
+          <tr><th>Метод</th><th>Смысл</th></tr>
+          <tr><td><code>isNotNull()</code></td><td>Не null, но пустая строка допустима.</td></tr>
+          <tr><td><code>isNotEmpty()</code></td><td>Не null и длина &gt; 0; пробелы допустимы.</td></tr>
+          <tr><td><code>isNotBlank()</code></td><td>Есть хотя бы один непробельный символ.</td></tr>
+        </table>
+      </section>
+      <section class="card green">
+        <h2>Числа и диапазоны</h2>
+        <pre>assertThat(age).isGreaterThanOrEqualTo(18);
+assertThat(count).isZero();
+assertThat(total).isPositive().isLessThan(1_000);
+assertThat(percent).isBetween(0, 100);</pre>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card warn">
+        <h2><code>as()</code> ставится до проверки</h2>
+        <pre>assertThat(user.active())
+    .as(<span class="str">"Активность пользователя %s"</span>, user.name())
+    .isTrue();</pre>
+        <p><code>as</code> добавляет бизнес-контекст. Expected/actual AssertJ покажет сам. Если поставить <code>as</code> после упавшего assertion, выполнение до него не дойдёт.</p>
+      </section>
+      <section class="card">
+        <h2>Null и boolean</h2>
+        <pre>assertThat(user).isNotNull();
+assertThat(deletedUser).isNull();
+assertThat(user.active()).isTrue();
+assertThat(order.cancelled()).isFalse();</pre>
+        <p>Проверяйте значение напрямую. Конструкция <code>assertThat(x != null).isTrue()</code> теряет тип и обычно даёт менее полезную диагностику.</p>
+      </section>
+      <section class="card danger">
+        <h2>Частые ошибки</h2>
+        <ul>
+          <li><code>assertThat(expected).isEqualTo(actual)</code> — поменяны местами expected и actual.</li>
+          <li><code>isNotNull()</code> вместо требуемого <code>isNotBlank()</code>.</li>
+          <li>Слишком слабый assertion: <code>contains</code>, когда контракт требует точное равенство.</li>
+          <li>Несколько несвязанных смыслов в одной длинной цепочке.</li>
+          <li>Проверка вычисленного boolean вместо самого объекта.</li>
+        </ul>
+      </section>
+      <section class="card small">
+        <h2>Шаблон читаемого теста</h2>
+        <pre><span class="cm">// given</span>
+Order order = service.create(request);
+
+<span class="cm">// then</span>
+assertThat(order.id()).as(<span class="str">"id созданного заказа"</span>)
+    .isPositive();
+assertThat(order.status()).isEqualTo(NEW);</pre>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>AssertJ • лист 1 • начальный</span><span>Проверяйте actual, выбирайте строгий контракт, добавляйте контекст.</span></footer>
+</section>
+
+<!-- ЛИСТ 2 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">2/5</div>
+    <div class="title"><h1>Коллекции, Optional и Map</h1><p>Точный состав, порядок, предикаты и безопасное извлечение</p></div>
+    <div class="level">СЛОЖНОСТЬ: БАЗОВАЯ+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card purple">
+        <h2>Как выбрать проверку коллекции</h2>
+        <table>
+          <tr><th>Метод</th><th>Лишние</th><th>Порядок</th></tr>
+          <tr><td><code>contains(a,b)</code></td><td>можно</td><td>учитывает относительный</td></tr>
+          <tr><td><code>containsOnly(a,b)</code></td><td>нельзя</td><td>не важен</td></tr>
+          <tr><td><code>containsExactly(a,b)</code></td><td>нельзя</td><td>важен</td></tr>
+          <tr><td><code>containsExactlyInAnyOrder</code></td><td>нельзя</td><td>не важен</td></tr>
+        </table>
+        <pre>assertThat(statuses)
+    .containsExactly(<span class="str">"NEW"</span>, <span class="str">"PAID"</span>, <span class="str">"SHIPPED"</span>);</pre>
+      </section>
+      <section class="card">
+        <h2>Размер, элементы и предикаты</h2>
+        <pre>assertThat(users)
+    .isNotEmpty()
+    .hasSize(3)
+    .contains(ivan)
+    .doesNotContain(admin)
+    .allMatch(u -&gt; u.age() &gt;= 18)
+    .anyMatch(User::active)
+    .noneMatch(u -&gt; u.name().isBlank());</pre>
+        <p>Не дублируйте контракт без пользы: после <code>containsExactly(a,b,c)</code> отдельный <code>hasSize(3)</code> обычно избыточен.</p>
+      </section>
+      <section class="card green">
+        <h2>Один элемент</h2>
+        <pre>assertThat(users)
+    .singleElement()
+    .extracting(User::name)
+    .isEqualTo(<span class="str">"Ivan"</span>);
+
+assertThat(users).first().isEqualTo(ivan);
+assertThat(users).last().isEqualTo(petr);</pre>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card warn">
+        <h2>Optional: сначала presence, затем value</h2>
+        <pre>assertThat(optionalUser)
+    .isPresent()
+    .get()
+    .extracting(User::name)
+    .isEqualTo(<span class="str">"Ivan"</span>);
+
+assertThat(emptyUser).isEmpty();
+assertThat(optionalStatus).contains(<span class="str">"READY"</span>);</pre>
+        <p>Тип цепочки: <code>Optional&lt;User&gt; → User → String</code>. Поэтому после извлечения одного имени нужен <code>isEqualTo</code>, а не <code>containsExactly</code>.</p>
+      </section>
+      <section class="card">
+        <h2>Map: ключи, значения и пары</h2>
+        <pre>assertThat(headers)
+    .containsEntry(<span class="str">"Content-Type"</span>, <span class="str">"application/json"</span>)
+    .containsKey(<span class="str">"X-Request-Id"</span>)
+    .doesNotContainKey(<span class="str">"Authorization"</span>);
+
+assertThat(headers).containsOnly(
+    entry(<span class="str">"A"</span>, <span class="str">"1"</span>), entry(<span class="str">"B"</span>, <span class="str">"2"</span>));</pre>
+        <p>Для <code>entry</code>: <code>import static org.assertj.core.api.Assertions.entry;</code></p>
+      </section>
+      <section class="card danger">
+        <h2>Что ослабляет тест</h2>
+        <div class="goodbad">
+          <div class="bad"><b>Слабо</b><pre>assertThat(list)
+ .isNotEmpty();</pre></div>
+          <div class="good"><b>Контракт</b><pre>assertThat(list)
+ .containsExactly(a,b);</pre></div>
+        </div>
+        <ul>
+          <li>Вызов <code>optional.get()</code> до assertion даст <code>NoSuchElementException</code> вместо понятного отчёта.</li>
+          <li><code>isEqualTo(List.of(...))</code> работает, но специализированный <code>containsExactly</code> лучше показывает расхождение элементов.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>AssertJ • лист 2 • базовый+</span><span>Строгость проверки должна совпадать с контрактом данных.</span></footer>
+</section>
+
+<!-- ЛИСТ 3 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">3/5</div>
+    <div class="title"><h1>Извлечение и фильтрация</h1><p>extracting, tuple, filteredOn и flatExtracting без лишних циклов</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card purple">
+        <h2><code>extracting</code>: одно поле списка</h2>
+        <pre>assertThat(users)
+    .extracting(User::name)
+    .containsExactly(<span class="str">"Ivan"</span>, <span class="str">"Anna"</span>, <span class="str">"Petr"</span>);</pre>
+        <p>Было <code>List&lt;User&gt;</code>, стало assertion над извлечёнными именами. Method reference типобезопаснее строкового <code>extracting("name")</code>.</p>
+      </section>
+      <section class="card green">
+        <h2>Несколько полей → tuple</h2>
+        <pre><span class="kw">import static</span> org.assertj.core.api.Assertions.tuple;
+
+assertThat(users)
+    .extracting(User::name, User::age)
+    .containsExactly(
+        tuple(<span class="str">"Ivan"</span>, 28),
+        tuple(<span class="str">"Anna"</span>, 31),
+        tuple(<span class="str">"Petr"</span>, 22));</pre>
+        <p>Порядок значений в каждом <code>tuple</code> обязан совпадать с порядком функций в <code>extracting</code>.</p>
+      </section>
+      <section class="card warn">
+        <h2>Фильтрация до извлечения</h2>
+        <pre>assertThat(users)
+    .filteredOn(User::active)
+    .extracting(User::name, User::age)
+    .containsExactly(
+        tuple(<span class="str">"Ivan"</span>, 28),
+        tuple(<span class="str">"Petr"</span>, 22));</pre>
+        <p>Читается как контракт: «среди активных пользователей ожидаю именно эти имя/возраст». Без <code>filteredOn</code> в результат попадёт и Anna.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card">
+        <h2>Варианты <code>filteredOn</code></h2>
+        <pre>assertThat(users)
+    .filteredOn(u -&gt; u.age() &gt;= 18)
+    .extracting(User::name)
+    .contains(<span class="str">"Ivan"</span>);
+
+assertThat(users)
+    .filteredOn(<span class="str">"active"</span>, true)
+    .hasSize(2);</pre>
+        <p>Лямбда или method reference предпочтительнее строкового имени свойства: компилятор помогает при рефакторинге.</p>
+      </section>
+      <section class="card purple small">
+        <h2><code>flatExtracting</code>: расплющить вложенные списки</h2>
+        <pre>List&lt;Order&gt; orders = List.of(
+    new Order(List.of(<span class="str">"Book"</span>, <span class="str">"Pen"</span>)),
+    new Order(List.of(<span class="str">"Notebook"</span>)));
+
+assertThat(orders)
+    .flatExtracting(Order::items)
+    .containsExactly(<span class="str">"Book"</span>, <span class="str">"Pen"</span>, <span class="str">"Notebook"</span>);</pre>
+        <p><code>extracting(Order::items)</code> даст список списков. <code>flatExtracting</code> объединит элементы в одну последовательность.</p>
+      </section>
+      <section class="card danger">
+        <h2>Диагностика ошибки компиляции</h2>
+        <ol>
+          <li>Посмотрите тип сразу после <code>assertThat(...)</code>.</li>
+          <li>Проверьте, к какому объекту применяется method reference.</li>
+          <li>Сначала снимите обёртку: <code>Optional → get()</code>, затем извлекайте поле.</li>
+          <li>Для одного результата используйте <code>isEqualTo</code>; для набора — <code>containsExactly</code>.</li>
+        </ol>
+      </section>
+      <section class="card">
+        <h2>Когда лучше сравнить DTO целиком</h2>
+        <p>Если контракт включает почти все поля, десяток <code>extracting</code> ухудшает читаемость. Создайте expected DTO и используйте обычное или recursive comparison. <code>extracting</code> особенно хорош для выбранных полей коллекции.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>AssertJ • лист 3 • средний</span><span>Сначала фильтруем, затем извлекаем, после этого строго сравниваем.</span></footer>
+</section>
+
+<!-- ЛИСТ 4 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">4/5</div>
+    <div class="title"><h1>Сложные проверки объектов</h1><p>Soft assertions, исключения, точность чисел и recursive comparison</p></div>
+    <div class="level">СЛОЖНОСТЬ: СРЕДНЯЯ+</div>
+  </header>
+  <main class="content cols">
+    <div class="stack">
+      <section class="card purple small">
+        <h2>Soft assertions: увидеть все связанные ошибки</h2>
+        <pre>SoftAssertions.assertSoftly(softly -&gt; {
+  softly.assertThat(product.name())
+      .as(<span class="str">"name"</span>).isEqualTo(<span class="str">"Keyboard"</span>);
+  softly.assertThat(product.price())
+      .as(<span class="str">"price"</span>).isEqualByComparingTo(<span class="str">"99.90"</span>);
+  softly.assertThat(product.available())
+      .as(<span class="str">"available"</span>).isTrue();
+});</pre>
+        <p>Используйте для полей одного объекта/ответа. Не объединяйте несвязанные сценарии: отчёт станет шумным.</p>
+      </section>
+      <section class="card warn small">
+        <h2>Исключения без try/catch</h2>
+        <pre>assertThatThrownBy(() -&gt; service.findById(-1))
+    .isInstanceOf(IllegalArgumentException.class)
+    .hasMessage(<span class="str">"id must be positive"</span>)
+    .hasNoCause();
+
+assertThatExceptionOfType(IOException.class)
+    .isThrownBy(client::read);
+
+assertThatCode(service::ping)
+    .doesNotThrowAnyException();</pre>
+      </section>
+      <section class="card">
+        <h2>BigDecimal и floating point</h2>
+        <pre>assertThat(new BigDecimal(<span class="str">"10.0"</span>))
+    .isEqualByComparingTo(<span class="str">"10.00"</span>);
+
+assertThat(actualDouble)
+    .isCloseTo(10.0, within(0.001));</pre>
+        <p><code>BigDecimal.equals</code> учитывает scale; <code>isEqualByComparingTo</code> сравнивает числовое значение. Для вычисляемых <code>double</code> задавайте tolerance.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card green small">
+        <h2>Recursive comparison для DTO</h2>
+        <pre>assertThat(actual)
+    .usingRecursiveComparison()
+    .ignoringFields(<span class="str">"id"</span>, <span class="str">"createdAt"</span>)
+    .isEqualTo(expected);</pre>
+        <p>Сравнивает вложенные поля рекурсивно, даже если DTO не реализует подходящий <code>equals</code>.</p>
+        <h3>Полезные настройки</h3>
+        <pre>.ignoringCollectionOrder()
+.withComparatorForType(comparator, BigDecimal.class)
+.withEqualsForFields(predicate, <span class="str">"email"</span>)
+.ignoringActualNullFields()</pre>
+        <p>Игнорируйте только технические поля, не входящие в проверяемый контракт. Большой список исключений маскирует дефекты.</p>
+      </section>
+      <section class="card">
+        <h2>Даты и время</h2>
+        <pre>assertThat(actualInstant)
+    .isAfter(start)
+    .isBefore(end);
+
+assertThat(actualTime)
+    .isCloseTo(expectedTime, within(2, ChronoUnit.SECONDS));</pre>
+        <p>Захватите <code>start</code> до действия, <code>end</code> после. Не сравнивайте серверное время с одной точкой «сейчас» без допустимого окна.</p>
+      </section>
+      <section class="card danger">
+        <h2>SoftAssertions: опасная форма</h2>
+        <pre>SoftAssertions softly = new SoftAssertions();
+softly.assertThat(a).isEqualTo(expectedA);
+softly.assertThat(b).isEqualTo(expectedB);
+softly.assertAll(); <span class="cm">// обязательно</span></pre>
+        <p>У ручного объекта забытый <code>assertAll()</code> делает тест ложно зелёным. Локальный <code>assertSoftly</code> безопаснее: финальная проверка вызывается автоматически.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>AssertJ • лист 4 • средний+</span><span>Сравнивайте бизнес-контракт, а не случайные технические детали.</span></footer>
+</section>
+
+<!-- ЛИСТ 5 -->
+<section class="sheet">
+  <header class="topbar">
+    <div class="page-no">5/5</div>
+    <div class="title"><h1>AssertJ в рабочем проекте</h1><p>Выбор стиля, переиспользование, диагностика и checklist ревью</p></div>
+    <div class="level">СЛОЖНОСТЬ: MIDDLE+</div>
+  </header>
+  <main class="content cols wide-left">
+    <div class="stack">
+      <section class="card purple">
+        <h2>Condition для повторяемого правила</h2>
+        <pre>Condition&lt;Integer&gt; even = new Condition&lt;&gt;(
+    value -&gt; value % 2 == 0,
+    <span class="str">"even number"</span>);
+
+assertThat(10).is(even);
+assertThat(numbers).are(even);</pre>
+        <p>Для часто повторяемого доменного языка рассмотрите custom assertion. Он должен выражать смысл: <code>assertThat(order).isPaid().hasTotal(...)</code>, а не просто прятать <code>isEqualTo</code>.</p>
+      </section>
+      <section class="card">
+        <h2>Другие способы проверок</h2>
+        <table>
+          <tr><th>Инструмент</th><th>Когда уместен</th></tr>
+          <tr><td>JUnit</td><td>Простые базовые проверки, <code>assertAll</code>, нет дополнительной библиотеки.</td></tr>
+          <tr><td>AssertJ</td><td>Объекты, коллекции, DTO, fluent-цепочки и богатая диагностика.</td></tr>
+          <tr><td>Hamcrest</td><td>Matcher API; часто inline в REST Assured <code>body()</code>.</td></tr>
+          <tr><td>JSON schema</td><td>Структура и типы API-контракта, но не вся бизнес-логика.</td></tr>
+          <tr><td>Mockito verify</td><td>Взаимодействие с зависимостью, только если вызов сам является контрактом.</td></tr>
+        </table>
+        <pre>assertEquals(expected, actual); <span class="cm">// JUnit</span>
+assertThat(actual, equalTo(expected)); <span class="cm">// Hamcrest</span>
+assertThat(actual).isEqualTo(expected); <span class="cm">// AssertJ</span></pre>
+      </section>
+      <section class="card warn">
+        <h2>API-тест: Hamcrest + AssertJ</h2>
+        <pre>Response response = given().when().get(<span class="str">"/booking/42"</span>);
+response.then().statusCode(200);
+
+Booking actual = response.as(Booking.class);
+assertThat(actual)
+    .usingRecursiveComparison()
+    .isEqualTo(expected);</pre>
+        <p>Transport-контракт удобно проверить REST Assured/Hamcrest, а связанный набор полей DTO — AssertJ.</p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card green">
+        <h2>Checklist хорошей проверки</h2>
+        <ol>
+          <li>Actual находится слева: <code>assertThat(actual)</code>.</li>
+          <li>Assertion соответствует типу данных.</li>
+          <li>Строгость совпадает с контрактом: состав, порядок, дубликаты.</li>
+          <li><code>as</code> объясняет бизнес-контекст и стоит до проверки.</li>
+          <li>Optional проверен до извлечения значения.</li>
+          <li>Для double задан tolerance; для денег осознанно обработан scale.</li>
+          <li>Soft assertions объединяют только связанные свойства.</li>
+          <li>Recursive comparison не игнорирует бизнес-поля.</li>
+          <li>Падение сообщает, что ожидали и что получили.</li>
+          <li>Проверяется результат, а не детали реализации.</li>
+        </ol>
+      </section>
+      <section class="card danger">
+        <h2>Антипаттерны</h2>
+        <ul>
+          <li><code>assertThat(true).isTrue()</code> после сложной ручной логики.</li>
+          <li>Цикл с assertion, когда достаточно <code>extracting</code>/<code>allMatch</code>.</li>
+          <li>Java <code>assert</code>: без JVM-флага <code>-ea</code> он отключён.</li>
+          <li>Проверка <code>toString()</code> вместо полей объекта.</li>
+          <li>Только <code>isNotNull</code> для ответа, у которого есть бизнес-контракт.</li>
+          <li>Проверка каждого внутреннего вызова mock-объекта вместо результата.</li>
+        </ul>
+      </section>
+      <section class="card purple">
+        <h2>Алгоритм при падении</h2>
+        <ol>
+          <li>Прочитайте description, expected и actual.</li>
+          <li>Проверьте тестовые данные и тип actual.</li>
+          <li>Убедитесь, что assertion выражает правильный контракт.</li>
+          <li>Сравните минимальное различающее поле.</li>
+          <li>Классифицируйте причину: продукт, тест, данные или окружение.</li>
+        </ol>
+      </section>
+      <section class="card">
+        <h2>Что значит уровень middle+</h2>
+        <p>Вы не просто получаете зелёный тест, а можете объяснить выбранную строгость, сделать падение диагностируемым, не замаскировать дефект игнорированием полей и выбрать подходящий инструмент для каждого уровня контракта.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>AssertJ • лист 5 • middle+</span><span>Хороший assertion строгий, читаемый, устойчивый и диагностируемый.</span></footer>
+</section>
+
+</body>
+</html>

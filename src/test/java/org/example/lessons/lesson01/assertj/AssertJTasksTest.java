@@ -24,39 +24,38 @@ import static org.assertj.core.api.Assertions.within;
 class AssertJTasksTest {
 
     @Test
-    @Disabled("Задание 1: создайте fluent-проверку")
+    @Disabled
     void task01_basicFluentAssertions() {
         int actualPrice = 180;
 
         // TODO: одной цепочкой проверьте, что цена положительная, между 100 и 200 и равна 180.
-        // Добавьте .as("Цена после скидки").
-        assertThat(actualPrice).isNotNull(); // замените эту учебную проверку
+        assertThat(actualPrice).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 2: используйте строковые assertions")
+    @Disabled
     void task02_stringAssertions() {
         String orderNumber = "order-2026-00042";
 
-        // TODO: проверьте, что строка не пустая, начинается с order-, заканчивается на 00042
-        // и соответствует regex order-YYYY-NNNNN.
-        assertThat(orderNumber).isNotNull(); // замените
+        // TODO: Проверьте, что строка не пустая, начинается с order-, заканчивается на 00042
+        //       и соответствует regex order-YYYY-NNNNN.
+        assertThat(orderNumber).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 3: выберите строгие проверки коллекции и Optional")
+    @Disabled
     void task03_collectionsAndOptional() {
         List<String> statuses = List.of("NEW", "PAID", "SHIPPED");
         Optional<User> user = Optional.of(new User("Ivan", 28, true));
 
-        // TODO: точный состав и порядок statuses.
-        // TODO: user присутствует, затем через get/extracting проверьте имя Ivan.
-        assertThat(statuses).isNotNull(); // замените
-        assertThat(user).isNotNull();     // замените
+        // TODO: Проверьте точный состав и порядок statuses, затем убедитесь, что user присутствует,
+        //       и через get/extracting проверьте имя Ivan.
+        assertThat(statuses).isNotNull();
+        assertThat(user).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 4: примените extracting")
+    @Disabled
     void task04_extractingProperties() {
         List<User> users = List.of(
                 new User("Ivan", 28, true),
@@ -64,24 +63,24 @@ class AssertJTasksTest {
                 new User("Petr", 22, true));
 
         // TODO: через extracting(User::name) проверьте точный порядок имён.
-        assertThat(users).isNotEmpty(); // замените/расширьте
+        assertThat(users).isNotEmpty();
     }
 
     @Test
-    @Disabled("Задание 5: используйте filteredOn и tuple")
+    @Disabled
     void task05_filteringAndTuples() {
         List<User> users = List.of(
                 new User("Ivan", 28, true),
                 new User("Anna", 31, false),
                 new User("Petr", 22, true));
 
-        // TODO: оставьте только active пользователей.
-        // Извлеките одновременно name и age и проверьте tuple("Ivan", 28), tuple("Petr", 22).
-        assertThat(users).isNotEmpty(); // замените
+        // TODO: Оставьте только active-пользователей, одновременно извлеките name и age
+        //       и проверьте tuple("Ivan", 28), tuple("Petr", 22).
+        assertThat(users).isNotEmpty();
     }
 
     @Test
-    @Disabled("Задание 6: проверьте Map и примените flatExtracting")
+    @Disabled
     void task06_mapsAndNestedCollections() {
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -90,59 +89,59 @@ class AssertJTasksTest {
                 new Order(List.of("Book", "Pen")),
                 new Order(List.of("Notebook")));
 
-        // TODO: Map содержит точную пару Content-Type/application-json и ключ X-Request-Id,
-        // но не содержит ключ Authorization.
-        // TODO: flatExtracting(Order::items) даёт Book, Pen, Notebook в точном порядке.
-        assertThat(headers).isNotEmpty(); // замените/расширьте
-        assertThat(orders).isNotEmpty();  // замените/расширьте
+        // TODO: Проверьте, что headers содержит пару Content-Type/application-json и ключ X-Request-Id,
+        //       но не содержит Authorization; через flatExtracting(Order::items) проверьте Book, Pen,
+        //       Notebook в точном порядке.
+        assertThat(headers).isNotEmpty();
+        assertThat(orders).isNotEmpty();
     }
 
     @Test
-    @Disabled("Задание 7: соберите связанные ошибки через SoftAssertions")
+    @Disabled
     void task07_softAssertions() {
-        Product product = new Product("Keyboard", new BigDecimal("99.90"), true);
+        Product product = new Product("Keyboard", new BigDecimal("99.900"), true);
 
-        // TODO: используйте SoftAssertions.assertSoftly.
-        // Проверьте name, price через isEqualByComparingTo и available == true.
-        assertThat(product).isNotNull(); // замените
+        // TODO: Через SoftAssertions.assertSoftly проверьте name == "Keyboard", числовое значение
+        //       price == "99.90" через isEqualByComparingTo и available == true.
+        assertThat(product).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 8: проверьте исключение без try/catch")
+    @Disabled
     void task08_exceptionAssertions() {
         UserService service = new UserService();
 
-        // TODO: assertThatThrownBy для service.findById(-1).
-        // Тип IllegalArgumentException, точное message "id must be positive", cause отсутствует.
-        assertThat(service).isNotNull(); // замените
+        // TODO: Через assertThatThrownBy вызовите service.findById(-1) и проверьте тип
+        //       IllegalArgumentException, точное сообщение "id must be positive" и отсутствие cause.
+        assertThat(service).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 9: примените recursive comparison")
+    @Disabled
     void task09_recursiveComparison() {
         Profile expected = new Profile(null, "Ivan", new Address("Moscow", "Tverskaya"), null);
         Profile actual = new Profile(100L, "Ivan", new Address("Moscow", "Tverskaya"),
                 Instant.parse("2026-07-13T12:00:00Z"));
 
         // TODO: usingRecursiveComparison, игнорируйте только id и createdAt.
-        assertThat(actual).isNotNull(); // замените
+        assertThat(actual).isNotNull();
     }
 
     @Test
-    @Disabled("Задание 10: Condition и сравнение assertion styles")
+    @Disabled
     void task10_conditionAndOtherAssertionStyles() {
-        // TODO: создайте Condition<Integer> с описанием "even number".
+        // TODO: Создайте Condition<Integer> с описанием "even number", проверьте им число 10,
+        //       затем оставьте проверки значения "READY" через JUnit, Hamcrest и AssertJ
+        //       и сравните сообщения этих трёх подходов при намеренном падении.
         Condition<Integer> even = null;
         assertThat(10).is(even);
 
         String actual = "READY";
 
-        // Один контракт тремя способами. Оставьте все три проверки и сравните сообщения при падении.
         org.junit.jupiter.api.Assertions.assertEquals("READY", actual);
         org.hamcrest.MatcherAssert.assertThat(actual, org.hamcrest.Matchers.equalTo("READY"));
         assertThat(actual).isEqualTo("READY");
 
-        // Java assert намеренно не используется: без JVM-флага -ea он будет отключён.
     }
 
     record User(String name, int age, boolean active) {

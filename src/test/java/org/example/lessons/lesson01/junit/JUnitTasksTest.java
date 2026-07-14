@@ -31,16 +31,16 @@ class JUnitTasksTest {
     private final PriceCalculator calculator = new PriceCalculator();
     private ShoppingCart cart;
 
-    // TODO task02: добавьте @BeforeEach и создавайте здесь новую ShoppingCart.
-    // Один и тот же изменяемый экземпляр между тестами использовать нельзя.
+    // TODO task02: Добавьте @BeforeEach и перед каждым тестом создавайте новую ShoppingCart
+    //              в поле cart, чтобы изменяемое состояние не переходило между тестами.
 
     @Test
-    @Disabled("Задание 1: реализуйте участок TODO и включите тест")
+    @Disabled
     void task01_basicAssertionsAndAssertAll() {
-        // Arrange
         User user = new User("Ivan", 28, true);
 
-        // TODO: получите имя, возраст и активность пользователя.
+        // TODO: Получите из user фактические имя, возраст и активность так, чтобы подготовленный
+        //       assertAll успешно проверил все три значения.
         String actualName = null;
         int actualAge = 0;
         boolean actualActive = false;
@@ -52,14 +52,14 @@ class JUnitTasksTest {
     }
 
     @Test
-    @Disabled("Задание 2: настройте @BeforeEach и включите оба теста task02")
+    @Disabled
     void task02_cartStartsEmpty() {
         assertNotNull(cart, "Корзина должна создаваться в @BeforeEach");
         assertTrue(cart.items().isEmpty());
     }
 
     @Test
-    @Disabled("Задание 2: настройте @BeforeEach и включите оба теста task02")
+    @Disabled
     void task02_cartStateDoesNotLeakBetweenTests() {
         assertNotNull(cart, "Корзина должна создаваться в @BeforeEach");
         cart.add("book");
@@ -68,9 +68,10 @@ class JUnitTasksTest {
 
     @ParameterizedTest(name = "{0} — корректный положительный id")
     @ValueSource(ints = {1, 2, 10, 999})
-    @Disabled("Задание 3: заполните TODO и включите тест")
+    @Disabled
     void task03_valueSource(int id) {
-        // TODO: вычислите условие, что id положительный.
+        // TODO: Вычислите boolean-условие, подтверждающее, что параметр id положительный,
+        //       для всех значений из @ValueSource.
         boolean valid = false;
 
         assertTrue(valid, () -> "id должен быть положительным: " + id);
@@ -83,31 +84,33 @@ class JUnitTasksTest {
             "99, 0, 99",
             "80, 100, 0"
     })
-    @Disabled("Задание 4: вызовите calculator и включите тест")
+    @Disabled
     void task04_csvSource(int price, int discountPercent, int expected) {
-        // TODO: вызовите calculator.priceAfterDiscount(...).
+        // TODO: Вызовите calculator.priceAfterDiscount с параметрами price и discountPercent
+        //       и сохраните результат в actual для подготовленного сравнения с expected.
         int actual = -1;
 
         assertEquals(expected, actual);
     }
 
     static Stream<Arguments> orderCases() {
-        // TODO task05: верните минимум три набора Arguments.of(Order, expectedTotal).
-        // Обязательно добавьте заказ с несколькими позициями и пустой заказ.
+        // TODO task05: Верните минимум три набора Arguments.of(Order, expectedTotal),
+        //              обязательно включив заказ с несколькими позициями и пустой заказ.
         return Stream.empty();
     }
 
     @ParameterizedTest(name = "order #{index} -> {1}")
     @MethodSource("orderCases")
-    @Disabled("Задание 5: реализуйте orderCases и включите тест")
+    @Disabled
     void task05_methodSource(Order order, int expectedTotal) {
         assertEquals(expectedTotal, order.total());
     }
 
     @Test
-    @Disabled("Задание 6: используйте assertThrows и включите тест")
+    @Disabled
     void task06_exceptionTypeAndMessage() {
-        // TODO: через assertThrows получите исключение от calculator.priceAfterDiscount(100, 101).
+        // TODO: Через assertThrows вызовите calculator.priceAfterDiscount(100, 101) и сохраните
+        //       полученное исключение в error для подготовленных проверок типа и сообщения.
         IllegalArgumentException error = null;
 
         assertAll(
@@ -117,10 +120,11 @@ class JUnitTasksTest {
 
     @Test
     @Timeout(1)
-    @Disabled("Задание 7: используйте assertTimeout и включите тест")
+    @Disabled
     void task07_timeout() {
-        // TODO: оберните calculator.slowOperation() в assertTimeout с лимитом 300 мс.
-        // @Timeout(1) сверху является дополнительной защитой от зависшего задания.
+        // TODO: Замените fail вызовом assertTimeout, внутри которого выполняется
+        //       calculator.slowOperation(), установив лимит 300 мс; аннотацию @Timeout(1)
+        //       оставьте как защиту от зависания.
         fail("Замените fail на assertTimeout");
     }
 
@@ -128,42 +132,44 @@ class JUnitTasksTest {
     class Task08NestedContexts {
 
         @Test
-        @Disabled("Задание 8: проверьте пустой заказ")
+        @Disabled
         void emptyOrderHasZeroTotal() {
             Order emptyOrder = new Order(List.of());
-            // TODO: получите total.
+            // TODO: Получите total пустого заказа и сохраните результат в переменную total
+            //       для подготовленной проверки нулевой суммы.
             int total = -1;
             assertEquals(0, total);
         }
 
         @Test
-        @Disabled("Задание 8: проверьте заказ из нескольких позиций")
+        @Disabled
         void filledOrderSumsAllItems() {
             Order order = new Order(List.of(10, 20, 35));
-            // TODO: получите total.
+            // TODO: Получите total заказа из нескольких позиций и сохраните результат
+            //       в переменную total для подготовленной проверки суммы 65.
             int total = -1;
             assertEquals(65, total);
         }
     }
 
     @Test
-    @Disabled("Задание 9: добавьте корректную assumption и включите тест")
+    @Disabled
     void task09_assumptions() {
         String environment = System.getProperty("test.env", "local");
 
-        // TODO: продолжайте тест только для environment == "local".
-        // Используйте assumeTrue, а не assertTrue.
+        // TODO: Через assumeTrue разрешите продолжение теста только при environment == "local",
+        //       не заменяя assumption обычным assertion.
 
         assertEquals("local", environment);
     }
 
     @TestFactory
-    @Disabled("Задание 10: создайте DynamicTest для каждого значения")
+    @Disabled
     Stream<DynamicTest> task10_dynamicTests() {
         List<Integer> values = List.of(-2, -1, 0, 1, 2);
 
-        // TODO: преобразуйте values в DynamicTest с понятным именем.
-        // Каждый динамический тест должен проверять: Math.abs(value) >= 0.
+        // TODO: Преобразуйте каждый элемент values в DynamicTest с понятным именем
+        //       и проверкой Math.abs(value) >= 0, вернув итоговый Stream<DynamicTest>.
         return Stream.empty();
     }
 

@@ -60,27 +60,28 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 1: реализуйте health check")
+    @Disabled
     void task01_healthCheck() {
         // TODO: GET /ping, проверьте status 201 и body "Created".
         failUntilImplemented();
     }
 
     @Test
-    @Disabled("Задание 2: проверьте список booking id")
+    @Disabled
     void task02_getBookingIds() {
-        // TODO: GET /booking.
-        // Проверки: status 200, JSON-массив не пуст, каждый bookingid > 0.
+        // TODO: Выполните GET /booking и проверьте status 200, непустой JSON-массив
+        //       и положительный bookingid у каждого элемента.
         failUntilImplemented();
     }
 
     @Test
-    @Disabled("Задание 3: примените queryParam firstname")
+    @Disabled
     void task03_filterBookingsByFirstName() {
         BookingRequest booking = uniqueBooking("Filter");
         int createdId = createTrackedBooking(booking);
 
-        // TODO: GET /booking?firstname=<booking.firstname()> и сохраните Response.
+        // TODO: Выполните GET /booking с queryParam firstname, равным booking.firstname(),
+        //       и сохраните результат в response для подготовленных проверок.
         Response response = null;
 
         assertThat(response).isNotNull();
@@ -90,7 +91,7 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 4: создайте booking body через Map")
+    @Disabled
     void task04_createBookingFromMap() {
         String firstName = "Map-" + UUID.randomUUID();
         Map<String, Object> dates = Map.of(
@@ -104,7 +105,8 @@ class RestAssuredTasksTest {
                 "bookingdates", dates,
                 "additionalneeds", "Breakfast");
 
-        // TODO: POST /booking с Content-Type JSON и body. Сохраните Response.
+        // TODO: Выполните POST /booking с Content-Type JSON и подготовленным body, сохраните Response,
+        //       затем добавьте созданный bookingid в createdBookingIds для cleanup.
         Response response = null;
 
         assertThat(response).isNotNull();
@@ -112,15 +114,16 @@ class RestAssuredTasksTest {
         assertThat(response.jsonPath().getInt("bookingid")).isPositive();
         assertThat(response.jsonPath().getString("booking.firstname")).isEqualTo(firstName);
 
-        // TODO: добавьте созданный bookingid в createdBookingIds для cleanup.
     }
 
     @Test
-    @Disabled("Задание 5: извлеките id и выполните последующий GET")
+    @Disabled
     void task05_extractIdAndGetCreatedBooking() {
         BookingRequest expected = uniqueBooking("Extract");
 
-        // TODO: самостоятельно создайте booking, извлеките bookingid и выполните GET /booking/{id}.
+        // TODO: Самостоятельно создайте booking, извлеките bookingid, зарегистрируйте его
+        //       в createdBookingIds, выполните GET /booking/{id} и сохраните результаты
+        //       в подготовленные переменные.
         int bookingId = 0;
         Response getResponse = null;
 
@@ -128,16 +131,17 @@ class RestAssuredTasksTest {
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.statusCode()).isEqualTo(200);
         assertThat(getResponse.jsonPath().getString("firstname")).isEqualTo(expected.firstname());
-        // TODO: зарегистрируйте id в createdBookingIds.
     }
 
     @Test
-    @Disabled("Задание 6: десериализуйте JSON в BookingResponse DTO")
+    @Disabled
     void task06_deserializeResponseToDto() {
         BookingRequest expected = uniqueBooking("Dto");
         int bookingId = createTrackedBooking(expected);
 
-        // TODO: GET /booking/{id}, затем response.as(BookingResponse.class).
+        // TODO: Выполните GET /booking/{id}, десериализуйте ответ через
+        //       response.as(BookingResponse.class) и сохраните DTO в actual
+        //       для подготовленных проверок.
         BookingResponse actual = null;
 
         assertThat(actual).isNotNull();
@@ -147,9 +151,11 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 7: создайте RequestSpecification")
+    @Disabled
     void task07_requestSpecification() {
-        // TODO: через RequestSpecBuilder задайте baseUri, Accept JSON и логирование при ошибке.
+        // TODO: Через RequestSpecBuilder создайте specification с baseUri, Accept JSON
+        //       и логированием запроса при ошибке, чтобы подготовленный GET /booking
+        //       прошёл проверки.
         RequestSpecification specification = null;
 
         Response response = given()
@@ -162,9 +168,10 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 8: создайте ResponseSpecification")
+    @Disabled
     void task08_responseSpecification() {
-        // TODO: через ResponseSpecBuilder ожидайте status 200 и Content-Type JSON.
+        // TODO: Через ResponseSpecBuilder создайте okJson, который ожидает status 200
+        //       и Content-Type JSON, и используйте его в подготовленном запросе.
         ResponseSpecification okJson = null;
 
         given()
@@ -177,14 +184,14 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 9: получите token и проверьте плохие credentials")
+    @Disabled
     void task09_authentication() {
-        // TODO: POST /auth с admin/password123 и извлеките token.
+        // TODO: Выполните POST /auth с admin/password123 и извлеките token, затем повторите запрос
+        //       с неверным password и сохраните Response в invalidAuth для подготовленных проверок.
         String token = null;
 
         assertThat(token).isNotBlank();
 
-        // TODO: повторите POST /auth с неверным password и сохраните Response.
         Response invalidAuth = null;
 
         assertThat(invalidAuth).isNotNull();
@@ -193,12 +200,13 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 10: выполните полное обновление PUT")
+    @Disabled
     void task10_fullUpdateWithPut() {
         int bookingId = createTrackedBooking(uniqueBooking("BeforePut"));
         BookingRequest updated = uniqueBooking("AfterPut");
 
-        // TODO: PUT /booking/{id} с cookie token и updated body. Сохраните Response.
+        // TODO: Выполните PUT /booking/{id} с cookie token и телом updated, сохранив результат
+        //       в updateResponse для проверки ответа и сохранённого состояния.
         Response updateResponse = null;
 
         assertThat(updateResponse).isNotNull();
@@ -211,13 +219,15 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 11: выполните частичное обновление PATCH")
+    @Disabled
     void task11_partialUpdateKeepsOtherFields() {
         BookingRequest original = uniqueBooking("BeforePatch");
         int bookingId = createTrackedBooking(original);
         String changedLastName = "Patched-" + UUID.randomUUID();
 
-        // TODO: PATCH /booking/{id} с body Map.of("lastname", changedLastName) и cookie token.
+        // TODO: Выполните PATCH /booking/{id} с cookie token и body
+        //       Map.of("lastname", changedLastName), сохранив результат в patchResponse
+        //       для проверки изменённого и неизменившихся полей.
         Response patchResponse = null;
 
         assertThat(patchResponse).isNotNull();
@@ -230,11 +240,12 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 12: удалите запись и подтвердите 404")
+    @Disabled
     void task12_deleteAndVerify() {
         int bookingId = createTrackedBooking(uniqueBooking("Delete"));
 
-        // TODO: DELETE /booking/{id} с cookie token, ожидайте status 201.
+        // TODO: Выполните DELETE /booking/{id} с cookie token, сохраните ответ в deleteResponse,
+        //       проверьте status 201 и последующий GET со status 404.
         Response deleteResponse = null;
 
         assertThat(deleteResponse).isNotNull();
@@ -245,11 +256,12 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 13: негативный GET с логированием при ошибке")
+    @Disabled
     void task13_unknownBookingReturns404() {
         int unknownId = Integer.MAX_VALUE;
 
-        // TODO: GET /booking/{id}; добавьте log().ifValidationFails() для request и response.
+        // TODO: Выполните GET /booking/{id} для unknownId, добавьте log().ifValidationFails()
+        //       для request и response и сохраните результат в response для проверки status 404.
         Response response = null;
 
         assertThat(response).isNotNull();
@@ -257,28 +269,26 @@ class RestAssuredTasksTest {
     }
 
     @Test
-    @Disabled("Задание 14: примените JSON Schema validator")
+    @Disabled
     void task14_jsonSchemaValidation() {
         int bookingId = createTrackedBooking(uniqueBooking("Schema"));
 
-        // TODO: GET /booking/{id}, status 200 и matchesJsonSchemaInClasspath(...).
-        // Schema уже лежит в schemas/lesson01/booking-schema.json.
+        // TODO: Выполните GET /booking/{id}, проверьте status 200 и соответствие схеме через
+        //       matchesJsonSchemaInClasspath("schemas/lesson01/booking-schema.json").
         failUntilImplemented();
     }
 
     @Test
-    @Disabled("Задание 15: реализуйте независимый CRUD-сценарий")
+    @Disabled
     void task15_completeCrudScenarioWithFinallyCleanup() {
         Integer bookingId = null;
         try {
-            // TODO 1: создайте booking и извлеките id.
-            // TODO 2: получите его GET-запросом и сравните ключевые поля.
-            // TODO 3: измените additionalneeds через PATCH.
-            // TODO 4: повторным GET подтвердите изменение.
-            // Не используйте createTrackedBooking: cleanup этого задания должен быть в finally.
+            // TODO: Не используя createTrackedBooking, создайте booking и извлеките id,
+            //       получите запись через GET и сравните ключевые поля, измените additionalneeds
+            //       через PATCH, подтвердите изменение повторным GET, а в finally
+            //       при ненулевом bookingId удалите запись с токеном.
             assertThat(bookingId).isPositive();
         } finally {
-            // TODO 5: если bookingId != null, удалите запись с токеном.
         }
     }
 

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>AssertJ Soft Assertions — шпаргалка A4</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #e9edf2; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #1e2430; }
+    .sheet { width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 9mm 7mm; background: white; display: flex; flex-direction: column; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    header { min-height: 18mm; border-bottom: 1.2mm solid #5b3f8c; display: grid; grid-template-columns: 22mm 1fr auto; gap: 4mm; align-items: center; padding-bottom: 3mm; margin-bottom: 3mm; }
+    .page { width: 18mm; height: 14mm; border-radius: 2mm; display: flex; align-items: center; justify-content: center; background: #5b3f8c; color: white; font-size: 17pt; font-weight: 800; }
+    h1 { margin: 0; font-size: 16pt; line-height: 1.05; }
+    .subtitle { margin: 1mm 0 0; font-size: 8.5pt; color: #586270; }
+    .level { border: .45mm solid #5b3f8c; border-radius: 5mm; padding: 1.6mm 3mm; font-size: 8.3pt; font-weight: 700; color: #5b3f8c; white-space: nowrap; }
+    main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.05fr .95fr; gap: 3mm; align-items: start; }
+    .stack { display: grid; gap: 2.4mm; }
+    .card { border: .3mm solid #c9d4df; border-radius: 1.8mm; padding: 2.2mm 2.6mm; break-inside: avoid; }
+    .purple { background: #f6f3fb; border-color: #b9a5d5; }
+    .green { background: #f1f8f3; border-color: #9dc6aa; }
+    .warn { background: #fff8e8; border-color: #d8b76b; }
+    .danger { background: #fff2f1; border-color: #d29b96; }
+    h2 { margin: 0 0 1.3mm; font-size: 10.4pt; color: #5b3f8c; }
+    h3 { margin: 1mm 0 .7mm; font-size: 8.8pt; color: #423454; }
+    p { margin: .7mm 0; font-size: 7.9pt; line-height: 1.23; }
+    ul, ol { margin: .8mm 0 0 4.2mm; padding: 0; }
+    li { margin: .55mm 0; font-size: 7.75pt; line-height: 1.2; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: .95em; }
+    pre { margin: 1mm 0 0; padding: 1.8mm 2mm; background: #1f1b29; color: #f5f3f8; border-radius: 1.3mm; font: 6.7pt/1.23 Consolas, "Courier New", monospace; white-space: pre-wrap; overflow: hidden; }
+    .tiny pre { font-size: 6.2pt; line-height: 1.18; }
+    .kw { color: #a8d8ff; } .str { color: #b9e493; } .cm { color: #aaa4b5; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1mm; font-size: 7.15pt; }
+    th, td { border: .25mm solid #c9d4df; padding: .9mm 1.1mm; text-align: left; vertical-align: top; }
+    th { background: #eee9f5; color: #49336d; }
+    .flow { display: grid; grid-template-columns: 1fr 9mm 1fr; gap: 1mm; align-items: center; margin-top: 1mm; }
+    .flow div { padding: 1.5mm; border-radius: 1mm; text-align: center; font-size: 7.3pt; }
+    .arrow { font-size: 14pt !important; padding: 0 !important; }
+    footer { height: 5mm; margin-top: 2mm; padding-top: 1.2mm; border-top: .25mm solid #d7dee5; color: #65727d; display: flex; justify-content: space-between; font-size: 6.7pt; }
+    @media screen { .sheet { margin: 8mm auto; box-shadow: 0 2mm 7mm rgba(0,0,0,.17); } }
+    @media print { html, body { background: white; } .sheet { margin: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+<section class="sheet">
+  <header>
+    <div class="page">A4</div>
+    <div><h1>AssertJ Soft Assertions: по кирпичикам</h1><p class="subtitle">Что такое softly, как работает лямбда, зачем assertAll и как сравнивать BigDecimal</p></div>
+    <div class="level">УРОВЕНЬ: ОСНОВА → MIDDLE</div>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section class="card purple">
+        <h2>1. Зачем нужны soft assertions</h2>
+        <p><b>Обычный assertion</b> бросает ошибку сразу. Если первое поле неверно, остальные проверки не выполняются.</p>
+        <p><b>Soft assertion</b> запоминает каждое падение, продолжает блок, а в конце формирует одну ошибку со всеми найденными расхождениями.</p>
+        <div class="flow">
+          <div class="danger">Hard<br>ошибка №1 → стоп</div><div class="arrow">→</div><div class="green">Soft<br>№1 + №2 + №3 → отчёт</div>
+        </div>
+        <p><b>Когда применять:</b> несколько независимых полей одного DTO, формы или API-ответа. Если без первой проверки продолжать опасно, оставьте её hard assertion.</p>
+      </section>
+
+      <section class="card green">
+        <h2>2. Явная форма: видны все детали</h2>
+        <pre>SoftAssertions softly = <span class="kw">new</span> SoftAssertions();
+
+softly.assertThat(product.name())
+    .as(<span class="str">"name"</span>)
+    .isEqualTo(<span class="str">"Keyboard"</span>);
+softly.assertThat(product.available())
+    .as(<span class="str">"available"</span>)
+    .isTrue();
+
+softly.assertAll(); <span class="cm">// бросает общую ошибку</span></pre>
+        <ol>
+          <li>Создали накопитель <code>SoftAssertions</code>.</li>
+          <li>Каждый <code>softly.assertThat</code> записывает ошибку в него.</li>
+          <li><code>assertAll()</code> проверяет накопленное и завершает тест.</li>
+        </ol>
+      </section>
+
+      <section class="card warn tiny">
+        <h2>3. Лямбда и переменная softly</h2>
+        <pre>SoftAssertions.assertSoftly(softly -&gt; {
+    softly.assertThat(product.name()).isEqualTo(<span class="str">"Keyboard"</span>);
+    softly.assertThat(product.available()).isTrue();
+});</pre>
+        <p><code>assertSoftly</code> ожидает функцию вида <code>Consumer&lt;SoftAssertions&gt;</code>. Библиотека сама создаёт объект <code>SoftAssertions</code> и передаёт его в вашу лямбду.</p>
+        <pre><span class="cm">// Мысленная модель работы assertSoftly:</span>
+SoftAssertions object = <span class="kw">new</span> SoftAssertions();
+consumer.accept(object); <span class="cm">// object попадает в softly</span>
+object.assertAll();</pre>
+        <p><code>softly</code> — обычное имя параметра. Можно написать <code>s</code> или <code>checks</code>, но <code>softly</code> понятнее. Тип IDE выводит автоматически: <code>SoftAssertions</code>.</p>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="card purple">
+        <h2>4. Почему <code>product.name()</code></h2>
+        <pre><span class="kw">record</span> Product(String name, BigDecimal price) { }
+
+product.name();  <span class="cm">// accessor record</span>
+product.price(); <span class="cm">// accessor record</span></pre>
+        <p>Компонент record хранится в private final поле, а компилятор создаёт публичный accessor с его именем. Рабочий контракт — <code>name()</code>. В этом вложенном учебном record внешний класс технически может увидеть private-поле как nestmate, но это особый случай: в отдельной модели <code>product.name</code> недоступен.</p>
+        <table>
+          <tr><th>Тип модели</th><th>Обычно читаем поле</th></tr>
+          <tr><td><code>record Product(String name)</code></td><td><code>product.name()</code></td></tr>
+          <tr><td>Обычный JavaBean / Lombok <code>@Data</code></td><td><code>product.getName()</code></td></tr>
+          <tr><td>Публичное поле</td><td><code>product.name</code>, но так проектируют редко</td></tr>
+        </table>
+      </section>
+
+      <section class="card warn">
+        <h2>5. Почему <code>isEqualByComparingTo</code></h2>
+        <pre>BigDecimal a = <span class="kw">new</span> BigDecimal(<span class="str">"99.90"</span>);  <span class="cm">// scale 2</span>
+BigDecimal b = <span class="kw">new</span> BigDecimal(<span class="str">"99.900"</span>); <span class="cm">// scale 3</span>
+
+a.equals(b);    <span class="cm">// false: значение + scale</span>
+a.compareTo(b); <span class="cm">// 0: численно равны</span></pre>
+        <table>
+          <tr><th>AssertJ</th><th>Что проверяет</th></tr>
+          <tr><td><code>isEqualTo("99.90")</code></td><td>Для BigDecimal учитывает числовое значение и scale.</td></tr>
+          <tr><td><code>isEqualByComparingTo("99.90")</code></td><td>Использует сравнение по числовому значению; 99.900 равно 99.90.</td></tr>
+        </table>
+        <p>Для денег чаще важна сумма, поэтому подходит <code>isEqualByComparingTo</code>. Если формат/scale входит в контракт — используйте <code>isEqualTo</code>.</p>
+      </section>
+
+      <section class="card danger">
+        <h2>6. Главная ловушка</h2>
+        <pre>SoftAssertions softly = <span class="kw">new</span> SoftAssertions();
+softly.assertThat(actual).isEqualTo(expected);
+<span class="cm">// забыли softly.assertAll() → тест может стать ложно зелёным</span></pre>
+        <p>Форма <code>SoftAssertions.assertSoftly(...)</code> безопаснее: она вызывает финальную проверку автоматически, даже если вы её не написали.</p>
+      </section>
+
+      <section class="card green">
+        <h2>7. Рецепт на каждый день</h2>
+        <ol>
+          <li>Выберите один объект и связанные свойства.</li>
+          <li>Откройте <code>SoftAssertions.assertSoftly(softly -&gt; { ... })</code>.</li>
+          <li>Для каждого свойства напишите отдельный <code>softly.assertThat(actualField)</code>.</li>
+          <li>Добавьте <code>as("поле/смысл")</code> до assertion.</li>
+          <li>Используйте типовой assertion: строка, число, список, BigDecimal.</li>
+          <li>Закройте блок; <code>assertAll</code> выполнится автоматически.</li>
+        </ol>
+        <p><b>Мантра:</b> <code>softly</code> не является данными продукта. Это накопитель проверок, созданный AssertJ и переданный в лямбду.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer><span>AssertJ Soft Assertions • 1 лист A4</span><span>Собрать все связанные расхождения и показать их одним понятным отчётом.</span></footer>
+</section>
+</body>
+</html>
