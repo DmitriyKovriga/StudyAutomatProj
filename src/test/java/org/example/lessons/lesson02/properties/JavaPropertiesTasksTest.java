@@ -17,7 +17,7 @@ class JavaPropertiesTasksTest {
     @Test
     @Disabled
     void task01_readPropertyWithDefault() {
-        // TODO: Прочитайте property "lesson2.environment" со значением по умолчанию "local"
+        // Задание 1. Прочитайте property "lesson2.environment" со значением по умолчанию "local"
         //       и сохраните результат в environment для подготовленной проверки.
         String environment = null;
 
@@ -30,7 +30,7 @@ class JavaPropertiesTasksTest {
         String key = "lesson2.browser";
         String previousValue = System.getProperty(key);
         try {
-            // TODO: Установите property key в "chrome", прочитайте её через System.getProperty
+            // Задание 2. Установите property key в "chrome", прочитайте её через System.getProperty
             //       и сохраните результат в actualBrowser для подготовленной проверки.
             String actualBrowser = null;
 
@@ -48,7 +48,7 @@ class JavaPropertiesTasksTest {
         try {
             System.setProperty(key, "3");
 
-            // TODO: Прочитайте property key, преобразуйте строку в int через Integer.parseInt
+            // Задание 3. Прочитайте property key, преобразуйте строку в int через Integer.parseInt
             //       и сохраните результат в retries для подготовленной проверки.
             int retries = 0;
 
@@ -66,7 +66,7 @@ class JavaPropertiesTasksTest {
         try {
             System.setProperty(key, "false");
 
-            // TODO: Прочитайте property key, преобразуйте строку через Boolean.parseBoolean
+            // Задание 4. Прочитайте property key, преобразуйте строку через Boolean.parseBoolean
             //       и сохраните результат в headless для подготовленной проверки.
             boolean headless = true;
 
@@ -81,7 +81,7 @@ class JavaPropertiesTasksTest {
     void task05_propertyAndAssumption() {
         String environment = System.getProperty("test.env", "local");
 
-        // TODO: Через assumeTrue продолжите тест только для environment == "local"; запустите
+        // Задание 5. Через assumeTrue продолжите тест только для environment == "local"; запустите
         //       метод без -Dtest.env, затем с -Dtest.env=stage и сравните passed/skipped.
 
         assertEquals("local", environment);
