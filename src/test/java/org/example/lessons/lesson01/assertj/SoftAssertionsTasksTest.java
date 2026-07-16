@@ -19,7 +19,7 @@ class SoftAssertionsTasksTest {
     void task01_manualLifecycle() {
         User user = new User("Ivan", 28, true);
 
-        // TODO: Создайте объект SoftAssertions, через него проверьте name == "Ivan", age == 28
+        // Задание 1. Создайте объект SoftAssertions, через него проверьте name == "Ivan", age == 28
         //       и active == true, после всех проверок обязательно вызовите assertAll().
         notImplemented();
     }
@@ -29,7 +29,7 @@ class SoftAssertionsTasksTest {
     void task02_assertSoftlyLambda() {
         User user = new User("Anna", 31, false);
 
-        // TODO: Через SoftAssertions.assertSoftly и параметр лямбды softly проверьте name == "Anna",
+        // Задание 2. Через SoftAssertions.assertSoftly и параметр лямбды softly проверьте name == "Anna",
         //       age больше 18 и active == false; вручную создавать SoftAssertions
         //       и вызывать assertAll() в этом задании не нужно.
         notImplemented();
@@ -40,7 +40,7 @@ class SoftAssertionsTasksTest {
     void task03_descriptionsAndSeveralFields() {
         Registration actual = new Registration("reg-42", "student@example.org", "CONFIRMED", 3);
 
-        // TODO: Одним блоком assertSoftly проверьте непустой id, email с окончанием "@example.org",
+        // Задание 3. Одним блоком assertSoftly проверьте непустой id и email с окончанием "@example.org",
         //       status == "CONFIRMED" и attempts между 1 и 3 включительно; каждой проверке
         //       добавьте понятное описание через as().
         notImplemented();
@@ -51,7 +51,7 @@ class SoftAssertionsTasksTest {
     void task04_bigDecimalByNumericValue() {
         Product product = new Product("Keyboard", new BigDecimal("99.900"), 2);
 
-        // TODO: Через assertSoftly проверьте name == "Keyboard", числовое значение price == "99.90"
+        // Задание 4. Через assertSoftly проверьте name == "Keyboard" и числовое значение price == "99.90"
         //       методом isEqualByComparingTo и quantity == 2; проверка цены должна пройти
         //       несмотря на разный scale BigDecimal.
         notImplemented();
@@ -67,7 +67,7 @@ class SoftAssertionsTasksTest {
                 new BigDecimal("125.00"),
                 true);
 
-        // TODO: В одном assertSoftly проверьте id == "order-100", customer.name == "Petr",
+        // Задание 5. В одном assertSoftly проверьте id == "order-100" и customer.name == "Petr",
         //       корректный customer.email, точный порядок items Book/Pen, числовое значение
         //       total == "125.0" и paid == true, используя отдельный softly.assertThat(...)
         //       для каждого самостоятельного свойства.
