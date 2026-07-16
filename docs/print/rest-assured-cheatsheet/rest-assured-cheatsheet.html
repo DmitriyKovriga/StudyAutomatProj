@@ -2,593 +2,292 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>REST API testing — рабочий маршрут на 9 листов A4</title>
+  <title>REST Assured с нуля — печатный учебный конспект</title>
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: #e8edf1; }
-    body { font-family: "Segoe UI", Arial, sans-serif; color: #17212b; }
-    .sheet { width: 210mm; height: 297mm; margin: 0 auto; padding: 7mm 8mm 6mm; background: white; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .sheet:last-child { break-after: auto; page-break-after: auto; }
-    .topbar { min-height: 18mm; border-bottom: 1.2mm solid #1e5f82; display: grid; grid-template-columns: 22mm 1fr auto; gap: 3mm; align-items: center; padding-bottom: 3mm; margin-bottom: 2.5mm; }
-    .page-no { width: 18mm; height: 14mm; border-radius: 2mm; display: flex; align-items: center; justify-content: center; background: #1e5f82; color: white; font-size: 17pt; font-weight: 800; }
-    .title h1 { margin: 0; font-size: 15.4pt; line-height: 1.05; }
-    .title p { margin: .8mm 0 0; font-size: 8.1pt; color: #52616b; }
-    .page-priority { border: .45mm solid #1e5f82; border-radius: 5mm; padding: 1.5mm 3mm; font-size: 8pt; font-weight: 800; color: #1e5f82; white-space: nowrap; }
-    .content { flex: 1; min-height: 0; }
-    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; align-items: start; height: 100%; }
-    .cols.wide-left { grid-template-columns: 1.08fr .92fr; }
-    .stack { display: flex; flex-direction: column; justify-content: space-between; gap: 3mm; min-height: 0; height: 100%; }
-    .card { border: .28mm solid #c8d3dc; border-radius: 1.6mm; padding: 2.7mm 3mm; break-inside: avoid; }
-    .blue { background: #f1f7fb; border-color: #91b5cc; }
-    .green { background: #f1f8f4; border-color: #92bea3; }
-    .warn { background: #fff7e6; border-color: #d4ae58; }
-    .danger { background: #fff1ef; border-color: #d0938d; }
-    .gray { background: #f4f6f7; border-color: #b7c0c7; }
-    h2 { margin: 0 0 1.5mm; font-size: 11.3pt; color: #1e5f82; }
-    h3 { margin: 1.2mm 0 .8mm; font-size: 9.7pt; color: #29485b; }
-    p { margin: .8mm 0; font-size: 9pt; line-height: 1.25; }
-    ul, ol { margin: .8mm 0 0 4.1mm; padding: 0; }
-    li { margin: .65mm 0; font-size: 8.55pt; line-height: 1.22; }
-    code { font-family: Consolas, "Courier New", monospace; font-size: .94em; }
-    pre { margin: 1.2mm 0 0; padding: 2.2mm 2.3mm; background: #172733; color: #f3f7fa; border-radius: 1.25mm; font: 7.35pt/1.24 Consolas, "Courier New", monospace; white-space: pre-wrap; tab-size: 2; overflow: hidden; }
-    .small pre { font-size: 6.85pt; line-height: 1.2; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1.1mm; font-size: 8.05pt; }
-    th, td { border: .23mm solid #c8d3dc; padding: 1.1mm 1.2mm; text-align: left; vertical-align: top; line-height: 1.2; }
-    th { background: #e7f0f5; color: #214e68; }
-    .priority { display: inline-block; border-radius: .8mm; padding: .2mm .85mm; margin-right: .7mm; color: white; font-size: 6.5pt; font-weight: 900; }
-    .p0 { background: #b23b32; } .p1 { background: #bf7a16; } .p2 { background: #467e63; }
-    .flow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1mm; margin-top: 1mm; }
-    .flow div { padding: 1.3mm .5mm; text-align: center; border-radius: 1mm; background: #dfeef6; font-size: 6.5pt; font-weight: 800; }
-    .goodbad { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4mm; }
-    .goodbad > div { padding: 1.2mm; border-radius: 1mm; }
-    .good { background: #eaf6ed; } .bad { background: #ffefed; }
-    .rule { border-left: 1.3mm solid #1e5f82; padding-left: 2mm; font-weight: 700; }
-    .footer { height: 4.6mm; margin-top: 1.8mm; padding-top: 1mm; border-top: .23mm solid #d7dee5; color: #65727d; display: flex; justify-content: space-between; font-size: 6.4pt; }
-    @media screen {
-      .sheet { margin: 7mm auto; box-shadow: 0 2mm 7mm rgba(0,0,0,.17); }
-      body:has(.sheet:target) .sheet { display: none; }
-      body:has(.sheet:target) .sheet:target { display: flex; }
-    }
-    @media print { html, body { background: white; } .sheet { margin: 0; box-shadow: none; } }
+    body { margin: 0; background: #dfe5e9; color: #17242d; font-family: "Segoe UI", Arial, sans-serif; }
+    .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 7mm 8mm 6mm; background: white; display: flex; flex-direction: column; overflow: hidden; break-after: page; }
+    .head { display: grid; grid-template-columns: 21mm 1fr auto; gap: 3mm; align-items: center; border-bottom: 1mm solid #176084; padding-bottom: 3mm; margin-bottom: 3mm; }
+    .number { height: 15mm; display: grid; place-items: center; background: #176084; color: white; border-radius: 2mm; font-size: 16pt; font-weight: 800; }
+    h1 { margin: 0; font-size: 17pt; line-height: 1.08; }
+    .sub { margin-top: .8mm; color: #596a74; font-size: 8pt; }
+    .level { border: .4mm solid #176084; color: #176084; border-radius: 5mm; padding: 1.4mm 2.8mm; font-size: 7.5pt; font-weight: 800; white-space: nowrap; }
+    .content { flex: 1; min-height: 0; column-count: 2; column-gap: 5mm; column-fill: auto; }
+    section { break-inside: avoid; margin: 0 0 2.7mm; }
+    h2 { margin: 0 0 1.2mm; color: #176084; font-size: 12.2pt; line-height: 1.15; }
+    h3 { margin: 1.5mm 0 .7mm; color: #2a596f; font-size: 10pt; }
+    p { margin: .8mm 0 1.25mm; font-size: 9.15pt; line-height: 1.36; }
+    ul, ol { margin: .8mm 0 1.3mm 4.5mm; padding: 0; }
+    li { margin: .65mm 0; font-size: 8.9pt; line-height: 1.3; }
+    pre { margin: 1.2mm 0 1.5mm; padding: 2.2mm 2.4mm; border-radius: 1.2mm; background: #172934; color: #f5f8fa; white-space: pre-wrap; font: 7.1pt/1.28 Consolas, monospace; }
+    code { font-family: Consolas, monospace; font-size: .94em; }
+    .box { padding: 2.4mm 2.7mm; border: .25mm solid #9dbbc9; border-radius: 1.5mm; background: #f0f8fc; }
+    .note { padding: 2.2mm 2.6mm; border-left: 1.2mm solid #d18b20; background: #fff7e5; }
+    .danger { padding: 2.2mm 2.6mm; border-left: 1.2mm solid #b4483e; background: #fff0ee; }
+    .task { padding: 2.2mm 2.6mm; border-left: 1.2mm solid #3c8060; background: #eef8f2; }
+    .label { font-weight: 800; color: #a23b31; }
+    table { width: 100%; border-collapse: collapse; margin: 1mm 0 1.5mm; font-size: 8.2pt; }
+    th, td { border: .22mm solid #bac9d1; padding: 1mm 1.2mm; text-align: left; vertical-align: top; line-height: 1.25; }
+    th { background: #e3f0f6; color: #194e68; }
+    .arrow { text-align: center; font-weight: 800; color: #176084; font-size: 9pt; letter-spacing: .2mm; }
+    .footer { margin-top: 2mm; padding-top: 1mm; border-top: .2mm solid #ccd5da; display: flex; justify-content: space-between; color: #687780; font-size: 6.5pt; }
+    @media screen { .page { margin: 7mm auto; box-shadow: 0 2mm 7mm #0003; } body:has(.page:target) .page { display:none; } body:has(.page:target) .page:target { display:flex; } }
+    @media print { body { background: white; } .page { margin: 0; } }
   </style>
 </head>
 <body>
 
-<section class="sheet" id="page1">
-  <header class="topbar"><div class="page-no">1/9</div><div class="title"><h1>Единая картина REST API-теста</h1><p>Повторяемый рабочий процесс от контракта до cleanup</p></div><div class="page-priority">ФОКУС: P0 ОСНОВА</div></header>
-  <main class="content cols wide-left">
-    <div class="stack">
-      <section class="card blue">
-        <h2>Один цикл, который нужно запомнить</h2>
-        <div class="flow"><div>КОНТРАКТ</div><div>ДАННЫЕ</div><div>REQUEST</div><div>RESPONSE</div><div>STATE</div><div>CLEANUP</div><div>DIAGNOSE</div></div>
-        <ol><li>Понять method/path/auth/request/response.</li><li>Создать контролируемые данные.</li><li>Отправить request.</li><li>Проверить transport, structure и business data.</li><li>После mutation прочитать сохранённое состояние.</li><li>Удалить созданное даже после падения.</li><li>Оставить данные для поиска причины.</li></ol>
-      </section>
-      <section class="card danger">
-        <h2><span class="priority p0">P0</span>Без этого тест не рабочий</h2>
-        <ul><li>Конкретный status, а не «любой 2xx».</li><li>Ключевые значения связаны с request.</li><li>Собственный id вместо общей записи.</li><li>Read-back после POST/PUT/PATCH/DELETE.</li><li>Отказ без auth для защищённой операции.</li><li>Cleanup и условное логирование.</li><li>Каждый тест запускается отдельно.</li></ul>
-      </section>
-      <section class="card warn">
-        <h2><span class="priority p1">P1</span>Ежедневная работа</h2>
-        <p>DTO/Jackson, JsonPath, specifications, schema, AssertJ для DTO, JUnit parameterization и lifecycle. Они усиливают P0, но не заменяют его.</p>
-      </section>
-      <section class="card green">
-        <h2><span class="priority p2">P2</span>После уверенной базы</h2>
-        <p>Custom filters, сложный GPath, parallel suite, расширенный HTTP config, retries, Allure/CI integrations.</p>
-        <p class="rule">Редкий метод библиотеки не компенсирует отсутствие state check.</p>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>Роли инструментов</h2>
-        <table><tr><th>REST Assured</th><td>HTTP request/response.</td></tr><tr><th>Hamcrest</th><td>Короткие inline body checks.</td></tr><tr><th>Jackson</th><td>JSON ↔ Java DTO.</td></tr><tr><th>AssertJ</th><td>Связанные данные и DTO.</td></tr><tr><th>JUnit</th><td>Запуск, lifecycle, parameterization.</td></tr></table>
-      </section>
-      <section class="card blue">
-        <h2>Что доказывает API-тест</h2>
-        <table><tr><th>Transport</th><td>Endpoint отвечает правильным status/type.</td></tr><tr><th>Structure</th><td>Поля, types и вложенность допустимы.</td></tr><tr><th>Business</th><td>Вернулись правильные значения.</td></tr><tr><th>State</th><td>Изменение реально сохранилось.</td></tr><tr><th>Security</th><td>Запрещённая операция отклоняется.</td></tr></table>
-      </section>
-      <section class="card danger"><h2>Почему status 200 недостаточно</h2><p>Можно получить 200 с пустым body, чужой записью, неверной ценой или несохранённым PATCH. Status — первый слой, а не финал.</p></section>
-      <section class="card warn"><h2>Общий учебный сервис</h2><p>Restful Booker периодически сбрасывает данные. Нельзя полагаться на постоянный id/размер списка. Создавайте своё и очищайте после теста.</p></section>
-      <section class="card gray"><h2>Цель</h2><p>Взять новый endpoint, самостоятельно выбрать данные и проверки, собрать устойчивый сценарий и объяснить причину падения.</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 1/9 • карта</span><span>Контракт → данные → request → response → state → cleanup.</span></footer>
-</section>
+<article class="page" id="page1">
+  <header class="head"><div class="number">1/10</div><div><h1>Что мы вообще тестируем</h1><div class="sub">Сначала общая картина, потом первая строка REST Assured</div></div><div class="level">С НУЛЯ · TASK 01</div></header>
+  <main class="content">
+    <section><h2>API — это разговор двух программ</h2><p>Когда браузер открывает сайт, он отправляет серверу запрос и получает ответ. REST API работает так же, только вместо готовой HTML-страницы обычно передаёт данные в JSON.</p><p>В нашем тесте роль клиента играет Java-код. Он говорит серверу: «выполни такую операцию по такому адресу, вот мои данные». Сервер отвечает: «операция закончилась с таким статусом, вот результат».</p><div class="box"><p><b>Request</b> — то, что тест отправляет: HTTP-метод, адрес, параметры, заголовки, авторизация и иногда body.</p><p><b>Response</b> — то, что сервер вернул: status code, headers и body.</p></div></section>
+    <section><h2>Из чего состоит HTTP request</h2><table><tr><th>Часть</th><th>Пример</th><th>Смысл</th></tr><tr><td>Method</td><td>GET</td><td>Прочитать данные</td></tr><tr><td>Base URL</td><td>https://...com</td><td>Какой сервер</td></tr><tr><td>Path</td><td>/booking</td><td>Какой endpoint</td></tr><tr><td>Headers</td><td>Content-Type</td><td>Служебная информация</td></tr><tr><td>Body</td><td>{...}</td><td>Отправляемые данные</td></tr></table><p>Полный адрес получается из base URL и path. Например: <code>https://restful-booker.herokuapp.com</code> + <code>/ping</code>.</p></section>
+    <section><h2>Зачем здесь REST Assured</h2><p>Java сама умеет отправлять HTTP-запросы, но низкоуровневый код получается длинным. REST Assured — библиотека, которая позволяет описать request понятной цепочкой.</p><pre>Response response = given()
+        .spec(BASE_SPEC)
+    .when()
+        .get("/ping");</pre><p>Это читается сверху вниз:</p><ol><li><code>given()</code> — начинаем описывать request.</li><li><code>spec(BASE_SPEC)</code> — подключаем общие настройки: адрес сервера и заголовки.</li><li><code>when()</code> — настройки закончились, сейчас выполним действие.</li><li><code>get("/ping")</code> — отправляем GET на endpoint <code>/ping</code>.</li><li>Результат сохраняем в переменную <code>response</code>.</li></ol></section>
+    <section><h2>Почему мы сохраняем Response</h2><p><code>Response</code> — обычный Java-объект, внутри которого лежит весь ответ сервера. Из него можно получить статус, тип данных и тело ответа.</p><pre>response.statusCode()   // 201
+response.contentType()  // text/plain
+response.asString()     // Created</pre><p>После получения actual-значений AssertJ сравнивает их с expected:</p><pre>assertThat(response.statusCode())
+        .isEqualTo(201);</pre><p>Читается: «убеждаемся, что фактический status равен ожидаемому 201».</p></section>
+    <section class="task"><h2>Как это связано с task01</h2><p><span class="label">Задача:</span> самостоятельно получить <code>Response</code> от <code>GET /ping</code>. Assertions ниже уже проверяют три части ответа. Вам не нужно угадывать новые методы: request собирается ровно как в примере выше.</p><p>Если переменная остаётся <code>null</code>, assertion падает потому, что ответа ещё нет. Замените только <code>null</code> на вызов REST Assured.</p></section>
+    <section class="note"><h2>Главная мысль листа</h2><p>REST Assured не «проверяет API магически». Он отправляет HTTP request и возвращает объект <code>Response</code>. Дальше тест обычным Java-кодом читает ответ и сравнивает actual с expected.</p></section>
+  </main><footer class="footer"><span>REST Assured с нуля</span><span>request → server → response → assertions</span></footer>
+</article>
 
-<section class="sheet" id="page2">
-  <header class="topbar"><div class="page-no">2/9</div><div class="title"><h1>От контракта к правильному request</h1><p>Сначала семь вопросов, потом код given/when</p></div><div class="page-priority">ВАЖНОСТЬ: P0</div></header>
-  <main class="content cols">
-    <div class="stack">
-      <section class="card danger">
-        <h2>7 вопросов до кода</h2>
-        <ol><li>HTTP method?</li><li>Path?</li><li>Path/query params?</li><li>Auth?</li><li>Request headers?</li><li>Request body?</li><li>Response и способ подтверждения эффекта?</li></ol>
-      </section>
-      <section class="card blue small">
-        <h2>Анатомия request</h2>
-        <pre>given()
-    .baseUri(BASE_URL)
-    .accept(ContentType.JSON)
-    .contentType(ContentType.JSON)
-    .pathParam("id", bookingId)
-    .queryParam("firstname", "Ivan")
-    .cookie("token", token)
-    .body(requestBody)
-  .when()
-    .put("/booking/{id}");</pre>
-        <table><tr><th>baseUri</th><td>Сервер.</td></tr><tr><th>accept</th><td>Формат response.</td></tr><tr><th>contentType</th><td>Формат request body.</td></tr><tr><th>pathParam</th><td>Конкретный ресурс.</td></tr><tr><th>queryParam</th><td>Фильтр.</td></tr><tr><th>cookie/auth</th><td>Полномочия.</td></tr></table>
-      </section>
-      <section class="card green">
-        <h2>Path и query — разный смысл</h2>
-        <pre>// конкретный ресурс
-.pathParam("id", bookingId)
-.get("/booking/{id}")
+<article class="page" id="page2">
+  <header class="head"><div class="number">2/10</div><div><h1>JSON и DTO без загадок</h1><div class="sub">Как текст от сервера превращается в удобные Java-объекты</div></div><div class="level">БАЗА · TASK 02</div></header>
+  <main class="content">
+    <section><h2>Что такое JSON</h2><p>JSON — текстовый формат передачи данных. Объект записывается в фигурных скобках, массив — в квадратных.</p><pre>{ "bookingid": 17 }</pre><pre>[
+  { "bookingid": 17 },
+  { "bookingid": 28 }
+]</pre><p>Первый пример — один объект. Второй — массив из двух объектов. Сервер присылает именно текст, но работать в тесте с текстом неудобно.</p></section>
+    <section><h2>DTO — Java-представление JSON</h2><p>DTO расшифровывается как Data Transfer Object — объект для передачи данных. Мы создаём Java-класс с полями, соответствующими JSON.</p><pre>public record BookingIdResponse(
+        int bookingid) {
+}</pre><p>JSON-поле <code>bookingid</code> попадает в компонент record с тем же именем. После преобразования можно вызвать <code>booking.bookingid()</code> и получить обычное число.</p></section>
+    <section><h2>Кто выполняет преобразование</h2><p>REST Assured получает body ответа. Jackson читает JSON и создаёт Java-объекты. В проекте Jackson уже подключён, поэтому достаточно вызвать <code>response.as(...)</code>.</p><div class="arrow">JSON-ТЕКСТ → JACKSON → JAVA DTO</div><p>Для одного объекта:</p><pre>BookingResponse booking =
+        response.as(BookingResponse.class);</pre><p><code>BookingResponse.class</code> сообщает Jackson, объект какого типа нужно создать.</p></section>
+    <section><h2>Почему для списка нужен TypeRef</h2><p>Ответ <code>GET /booking</code> — не один объект, а список. Нам нужен тип <code>List&lt;BookingIdResponse&gt;</code>. Из-за устройства generic-типов Java нельзя написать <code>List&lt;...&gt;.class</code>. REST Assured даёт оболочку <code>TypeRef</code>, которая сохраняет полное описание типа.</p><pre>List&lt;BookingIdResponse&gt; bookings =
+        response.as(new TypeRef&lt;&gt;() {
+        });</pre><p>Тип переменной слева подсказывает компилятору, что внутри <code>TypeRef</code> ожидается именно список <code>BookingIdResponse</code>.</p></section>
+    <section><h2>Как читать проверку списка</h2><pre>assertThat(bookings)
+    .isNotEmpty()
+    .allSatisfy(booking ->
+        assertThat(booking.bookingid())
+            .isPositive());</pre><ol><li><code>assertThat(bookings)</code> — проверяем весь список.</li><li><code>isNotEmpty()</code> — в нём есть хотя бы один элемент.</li><li><code>allSatisfy</code> — запускаем внутреннюю проверку для каждого элемента.</li><li>Переменная <code>booking</code> внутри лямбды — очередной DTO из списка.</li><li><code>bookingid()</code> — getter record, возвращающий ID.</li></ol></section>
+    <section class="task"><h2>Как это связано с task02</h2><p>Сначала получите <code>Response</code> от <code>GET /booking</code>. Затем отдельной строкой преобразуйте body в подготовленную переменную <code>bookings</code>. Assertions уже написаны — ваша задача состоит только из двух понятных действий: получить ответ и превратить JSON-массив в Java-список.</p></section>
+    <section class="danger"><h2>Почему мы не используем body("$", matcher)</h2><p>REST Assured умеет искать значения внутри JSON своим DSL. Но для связанного ответа основной путь курса — DTO. Так вы работаете с типами Java, получаете подсказки IDE и проверяете данные через знакомый AssertJ.</p></section>
+  </main><footer class="footer"><span>2/10 · JSON и DTO</span><span>response.as(...) передаёт JSON Jackson</span></footer>
+</article>
 
-// фильтр списка
-.queryParam("firstname", firstName)
-.get("/booking")</pre>
-      </section>
-      <section class="card gray"><h2>Правило</h2><p class="rule">Я могу вслух прочитать: куда, каким методом, с какими полномочиями и данными идёт request.</p></section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>Endpoints Restful Booker</h2>
-        <table><tr><th>GET /ping</th><td>Health, 201.</td></tr><tr><th>GET /booking</th><td>Список id/filters.</td></tr><tr><th>GET /booking/{id}</th><td>Один booking.</td></tr><tr><th>POST /booking</th><td>Создание.</td></tr><tr><th>POST /auth</th><td>Token.</td></tr><tr><th>PUT /booking/{id}</th><td>Полная замена, auth.</td></tr><tr><th>PATCH /booking/{id}</th><td>Частичное изменение, auth.</td></tr><tr><th>DELETE /booking/{id}</th><td>Удаление, auth.</td></tr></table>
-      </section>
-      <section class="card warn">
-        <h2>Map, DTO или JSON string?</h2>
-        <table><tr><th>Map</th><td>Маленький PATCH/обучение JSON. Опечатки в ключах.</td></tr><tr><th>DTO</th><td>Основной вариант: типы, IDE, reuse, сравнение.</td></tr><tr><th>String</th><td>Короткий сырой/негативный payload.</td></tr></table>
-        <pre>BookingRequest body = new BookingRequest(
-    "Ivan", "Student", 150, true,
-    new BookingDates("2026-08-01", "2026-08-05"),
-    "Breakfast");
+<article class="page" id="page3">
+  <header class="head"><div class="number">3/10</div><div><h1>POST: отправляем DTO и создаём запись</h1><div class="sub">От Java-объекта к JSON request body и обратно</div></div><div class="level">БАЗА · TASK 03</div></header>
+  <main class="content">
+    <section><h2>GET читает, POST создаёт</h2><p>Для GET обычно достаточно адреса. POST создаёт новый resource, поэтому серверу нужно передать данные будущей записи. Они находятся в request body.</p><p>В тесте данные представлены DTO:</p><pre>BookingRequest expected =
+        uniqueBooking("Create");</pre><p>Имя <code>expected</code> важно: это не просто body. Это ожидаемое состояние записи, с которым позже сравнивается ответ сервера.</p></section>
+    <section><h2>Как DTO становится JSON</h2><pre>Response response = given()
+        .spec(BASE_SPEC)
+        .contentType(ContentType.JSON)
+        .body(expected)
+    .when()
+        .post("/booking");</pre><p><code>contentType(JSON)</code> сообщает серверу: «body отправлено в формате JSON». <code>body(expected)</code> передаёт Java DTO. Jackson сериализует его — превращает Java-объект в JSON-текст.</p><div class="arrow">JAVA DTO → JACKSON → JSON → SERVER</div></section>
+    <section><h2>Accept и Content-Type — не одно и то же</h2><table><tr><th>Заголовок</th><th>Вопрос</th></tr><tr><td>Accept</td><td>В каком формате клиент хочет получить response?</td></tr><tr><td>Content-Type</td><td>В каком формате клиент отправляет request body?</td></tr></table><p><code>BASE_SPEC</code> уже содержит Accept JSON. Для POST дополнительно указываем Content-Type JSON, потому что у request появилось body.</p></section>
+    <section><h2>Форма create response</h2><pre>{
+  "bookingid": 42,
+  "booking": {
+    "firstname": "Create-...",
+    "lastname": "Student"
+  }
+}</pre><p>Это wrapper: снаружи находятся ID и вложенный booking. Поэтому response DTO повторяет ту же форму:</p><pre>record CreateBookingResponse(
+    int bookingid,
+    BookingResponse booking) {
+}</pre><p>Если структура Java не соответствует JSON, Jackson не сможет корректно заполнить объект.</p></section>
+    <section><h2>Получаем response DTO</h2><pre>CreateBookingResponse actual =
+    response.as(CreateBookingResponse.class);</pre><p>Теперь <code>actual.bookingid()</code> даёт созданный ID, а <code>actual.booking()</code> — данные созданной записи.</p><pre>assertThat(actual.booking())
+    .usingRecursiveComparison()
+    .isEqualTo(expected);</pre><p>Recursive comparison проходит по всем полям, включая вложенный <code>bookingdates</code>, и показывает различия.</p></section>
+    <section><h2>Зачем регистрировать ID</h2><p>Тест создал данные на общем сервере. Их нужно удалить после теста. Поэтому ID сразу добавляется в <code>createdBookingIds</code>. Метод <code>@AfterEach</code> попытается удалить запись даже тогда, когда последующая assertion упадёт.</p><p class="note">Правильный порядок: получили ID → сразу зарегистрировали cleanup → продолжили проверки.</p></section>
+    <section class="task"><h2>План task03</h2><ol><li>Собрать POST с <code>expected</code> в body.</li><li>Сохранить результат в <code>response</code>.</li><li>Преобразовать body в <code>CreateBookingResponse actual</code>.</li><li>Добавить <code>actual.bookingid()</code> в tracker.</li><li>Не переписывать готовые assertions снизу.</li></ol></section>
+  </main><footer class="footer"><span>3/10 · POST и DTO</span><span>serialization: Java → JSON; deserialization: JSON → Java</span></footer>
+</article>
 
-given().contentType(ContentType.JSON).body(body);</pre>
-      </section>
-      <section class="card danger">
-        <h2>Ошибки request</h2>
-        <ul><li>Перепутаны Accept и Content-Type.</li><li>URL склеен строкой.</li><li>Token попал в лог.</li><li>DTO имеет неверные JSON names.</li><li>Mutation идёт по чужому id.</li><li>Request не соответствует документации.</li></ul>
-      </section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 2/9 • request</span><span>Код начинается после понимания контракта.</span></footer>
-</section>
+<article class="page" id="page4">
+  <header class="head"><div class="number">4/10</div><div><h1>Read-back и параметры запроса</h1><div class="sub">Почему после создания нужен GET и чем path отличается от query</div></div><div class="level">ПРАКТИКА · TASKS 04–05</div></header>
+  <main class="content">
+    <section><h2>Ответ POST ещё ничего не гарантирует</h2><p>Представим дефект: сервер вернул правильный create response, но не записал данные в базу. Тест, проверивший только POST, будет зелёным. Чтобы проверить реальное состояние системы, выполняют read-back — отдельный GET созданной записи.</p><div class="arrow">POST → ID → GET ПО ID → SAVED DTO → СРАВНЕНИЕ</div></section>
+    <section><h2>Path parameter выбирает resource</h2><pre>Response response = given()
+        .spec(BASE_SPEC)
+        .pathParam("id", bookingId)
+    .when()
+        .get("/booking/{id}");</pre><p><code>{id}</code> — место в path. <code>pathParam("id", bookingId)</code> подставляет туда фактическое число. Если ID равен 42, сервер получает <code>GET /booking/42</code>.</p><p>Это лучше склейки строк: параметр явно назван, REST Assured корректно кодирует значение, а URL остаётся читаемым.</p></section>
+    <section><h2>Проверяем сохранённый DTO</h2><pre>assertThat(response.statusCode())
+        .isEqualTo(200);
 
-<section class="sheet" id="page3">
-  <header class="topbar"><div class="page-no">3/9</div><div class="title"><h1>Лестница проверок response</h1><p>От transport к business data и сохранённому состоянию</p></div><div class="page-priority">ВАЖНОСТЬ: P0</div></header>
-  <main class="content cols wide-left">
-    <div class="stack">
-      <section class="card blue">
-        <h2>Пять слоёв сверху вниз</h2>
-        <table><tr><th>1. Transport</th><td>Status, content type, важные headers.</td></tr><tr><th>2. Structure</th><td>Поля, JSON types, nesting, schema.</td></tr><tr><th>3. Business</th><td>Значения относятся к request.</td></tr><tr><th>4. Saved state</th><td>GET подтверждает mutation.</td></tr><tr><th>5. Unchanged state</th><td>PATCH не испортил остальное.</td></tr></table>
-      </section>
-      <section class="card danger">
-        <h2><span class="priority p0">P0</span>Конкретный transport</h2>
-        <pre>response.then()
-    .statusCode(200)
-    .contentType(ContentType.JSON);</pre>
-        <p>200, 201, 204, 400, 403 и 404 — разные результаты. «status &lt; 500» обычно слишком слабо.</p>
-      </section>
-      <section class="card green">
-        <h2>Structure + business</h2>
-        <pre>response.then()
-    .body("bookingid", greaterThan(0))
-    .body("booking.firstname",
-          equalTo(expected.firstname()))
-    .body("booking.bookingdates.checkin",
-          equalTo(expected.bookingdates().checkin()));</pre>
-      </section>
-      <section class="card warn">
-        <h2>Проверяйте риск</h2>
-        <ul><li>Идентификатор создан.</li><li>Ответ относится к request.</li><li>Ключевое поле корректно.</li><li>Вложенный объект не потерян.</li><li>Mutation сохранилась.</li></ul>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="card danger">
-        <h2>Response mutation не доказывает state</h2>
-        <div class="goodbad"><div class="bad"><b>Недостаточно</b><pre>PATCH ...
-  .then()
-  .statusCode(200);</pre></div><div class="good"><b>Нужно</b><pre>PATCH → 200
-GET /id → saved
-assert saved</pre></div></div>
-      </section>
-      <section class="card blue">
-        <h2>Разные mutation — разные ожидания</h2>
-        <table><tr><th>PUT</th><td>Saved DTO полностью равен updated.</td></tr><tr><th>PATCH</th><td>Changed field + preserved fields.</td></tr><tr><th>DELETE</th><td>GET после удаления → 404.</td></tr></table>
-      </section>
-      <section class="card green">
-        <h2>Минимум create-теста</h2>
-        <ol><li>POST вернул status и JSON.</li><li>bookingid положительный.</li><li>Response связан с request.</li><li>GET по id вернул booking.</li><li>DTO совпал с expected.</li><li>id зарегистрирован для cleanup.</li></ol>
-      </section>
-      <section class="card warn"><h2>Schema — один слой</h2><p>JSON может соответствовать schema и содержать чужой firstname. Structure не заменяет business.</p></section>
-      <section class="card gray"><h2>Самопроверка</h2><p class="rule">Мой тест доказывает фактическое состояние или только красивый response?</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 3/9 • assertions</span><span>Status — начало; read-back — доказательство state.</span></footer>
-</section>
-
-<section class="sheet" id="page4">
-  <header class="topbar"><div class="page-no">4/9</div><div class="title"><h1>Собственные данные: POST → GET → cleanup</h1><p>Основа независимого теста на общем окружении</p></div><div class="page-priority">ВАЖНОСТЬ: P0</div></header>
-  <main class="content cols">
-    <div class="stack">
-      <section class="card danger">
-        <h2>Почему нельзя менять «первый id»</h2>
-        <ul><li>Он может принадлежать другому тесту.</li><li>База может сброситься.</li><li>Параллельный пользователь изменит/удалит запись.</li><li>Порядок общего списка нестабилен.</li></ul>
-        <p>Read-only знакомство может извлечь текущий id. Mutation — только на своём.</p>
-      </section>
-      <section class="card green small">
-        <h2>Создать и извлечь id</h2>
-        <pre>BookingRequest expected = uniqueBooking("Create");
-
-int bookingId = given()
-    .spec(BASE_SPEC)
-    .contentType(ContentType.JSON)
-    .body(expected)
-  .when()
-    .post("/booking")
-  .then()
-    .statusCode(200)
-    .extract().path("bookingid");
-
-createdBookingIds.add(bookingId);</pre>
-      </section>
-      <section class="card blue small">
-        <h2>Прочитать saved DTO</h2>
-        <pre>BookingResponse actual = given()
-    .spec(BASE_SPEC)
-    .pathParam("id", bookingId)
-  .when()
-    .get("/booking/{id}")
-  .then()
-    .statusCode(200)
-    .extract().as(BookingResponse.class);
+BookingResponse actual =
+        response.as(BookingResponse.class);
 
 assertThat(actual)
-    .usingRecursiveComparison()
-    .isEqualTo(expected);</pre>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="card blue">
-        <h2>Уникальные данные</h2>
-        <pre>String firstName = "ApiTest-" + UUID.randomUUID();</pre>
-        <ul><li>Префикс показывает владельца.</li><li>UUID снижает конфликт.</li><li>Значение нужно сохранить в отчёт.</li><li>Остальные поля валидны и понятны.</li></ul>
-      </section>
-      <section class="card warn small">
-        <h2>Cleanup через JUnit</h2>
-        <pre>@AfterEach
-void cleanup() {
-    for (int id : createdBookingIds) {
-        deleteBookingIfPresent(id);
-    }
-    createdBookingIds.clear();
-}</pre>
-        <p>Регистрируйте id сразу после создания, а не в конце сценария.</p>
-      </section>
-      <section class="card danger small">
-        <h2>Страховка try/finally</h2>
-        <pre>Integer id = null;
-try {
-    id = createBooking();
-    // GET → PATCH → GET → DELETE → GET 404
-} finally {
-    if (id != null) deleteBookingIfPresent(id);
-}</pre>
-        <p>Cleanup терпим к уже удалённому resource и не скрывает main failure.</p>
-      </section>
-      <section class="card gray">
-        <h2>Инварианты независимости</h2>
-        <ul><li>Создаёт всё, что изменяет.</li><li>Удаляет только своё.</li><li>Не зависит от порядка.</li><li>Параллельные id не смешиваются.</li><li>Запускается отдельно.</li></ul>
-      </section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 4/9 • data lifecycle</span><span>Mutation только на своих данных; cleanup регистрируется сразу.</span></footer>
-</section>
+        .usingRecursiveComparison()
+        .isEqualTo(expected);</pre><p><code>expected</code> появился до POST. <code>actual</code> прочитан с сервера после POST. Их равенство доказывает, что отправленные данные сохранились.</p></section>
+    <section><h2>Query parameter фильтрует список</h2><pre>given()
+    .spec(BASE_SPEC)
+    .queryParam("firstname",
+                expected.firstname())
+    .queryParam("lastname",
+                expected.lastname())
+.when()
+    .get("/booking");</pre><p>Здесь endpoint остаётся <code>/booking</code>, но к URL добавляется строка фильтра: <code>?firstname=...&amp;lastname=...</code>. Ответом всё равно будет массив, поэтому его десериализуют через <code>TypeRef&lt;List&lt;BookingIdResponse&gt;&gt;</code>.</p></section>
+    <section><h2>Path и query отвечают на разные вопросы</h2><table><tr><th>Path parameter</th><td>«Дай конкретную запись с ID 42»</td></tr><tr><th>Query parameter</th><td>«Дай список записей, подходящих под фильтр»</td></tr></table><p><code>/booking/42</code> и <code>/booking?firstname=Ivan</code> — разные контракты.</p></section>
+    <section><h2>Почему проверяем свой ID</h2><p>Restful Booker — общий сервис. Даже при фильтрации в списке могут оказаться чужие записи. Мы не утверждаем, что результат имеет точный размер. Мы проверяем более устойчивый факт: среди найденных ID есть <code>createdId</code> нашего теста.</p><pre>assertThat(actual)
+    .extracting(BookingIdResponse::bookingid)
+    .contains(createdId);</pre><p><code>extracting</code> превращает список DTO в список их ID, после чего <code>contains</code> ищет наш ID.</p></section>
+    <section class="task"><h2>Tasks04–05</h2><p><b>Task04:</b> GET конкретной записи через path parameter, DTO и полное сравнение.</p><p><b>Task05:</b> GET списка через query parameters, <code>TypeRef</code> и поиск своего ID.</p></section>
+  </main><footer class="footer"><span>4/10 · состояние и параметры</span><span>mutation считается проверенной только после read-back</span></footer>
+</article>
 
-<section class="sheet" id="page5">
-  <header class="topbar"><div class="page-no">5/9</div><div class="title"><h1>Как выбрать способ проверки body</h1><p>Hamcrest, extraction, JsonPath, DTO, AssertJ и Schema</p></div><div class="page-priority">ФОКУС: P1 ПОСЛЕ P0</div></header>
-  <main class="content cols wide-left">
-    <div class="stack">
-      <section class="card blue">
-        <h2>Дерево решения</h2>
-        <table><tr><th>1 значение дальше</th><td>extract().path</td></tr><tr><th>2–4 простых поля</th><td>Hamcrest/JsonPath</td></tr><tr><th>Объект целиком</th><td>DTO + AssertJ</td></tr><tr><th>Форма/types</th><td>Schema дополнительно</td></tr><tr><th>Список/filter</th><td>JsonPath или DTO list</td></tr></table>
-      </section>
-      <section class="card green small">
-        <h2>Inline Hamcrest</h2>
-        <pre>response.then()
-    .statusCode(200)
-    .body("firstname", equalTo(expected.firstname()))
-    .body("totalprice", equalTo(expected.totalprice()))
-    .body("bookingdates.checkin",
-          equalTo(expected.bookingdates().checkin()));</pre>
-        <p>Компактно для малого контракта. Десять полей превращаются в стену JsonPath.</p>
-      </section>
-      <section class="card warn small">
-        <h2>Extraction и JsonPath</h2>
-        <pre>int id = response.then()
-    .statusCode(200)
-    .extract().path("bookingid");
+<article class="page" id="page5">
+  <header class="head"><div class="number">5/10</div><div><h1>Ошибки, логи и общая specification</h1><div class="sub">Как тест помогает найти причину падения и не повторять настройки</div></div><div class="level">ПРАКТИКА · TASKS 06–07</div></header>
+  <main class="content">
+    <section><h2>Негативный сценарий — ожидаемая ошибка</h2><p>Если запросить несуществующую запись, корректным результатом является 404 Not Found. Для теста это не авария: мы специально проверяем контракт ошибки.</p><pre>Response response = given()
+    .spec(BASE_SPEC)
+    .pathParam("id", unknownId)
+.when()
+    .get("/booking/{id}");
 
-String first = response.jsonPath().getString("firstname");
-int price = response.jsonPath().getInt("totalprice");</pre>
-        <p>Extraction связывает шаги flow; JsonPath достаёт точечные значения.</p>
-      </section>
-      <section class="card danger"><h2>Антипаттерн</h2><p>Извлечь десять полей вручную и собрать объект. Если response — связанный объект, десериализуйте сразу.</p></section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>DTO + AssertJ</h2>
-        <pre>BookingResponse actual =
-    response.as(BookingResponse.class);
-
-assertThat(actual)
-    .usingRecursiveComparison()
-    .isEqualTo(expected);</pre>
-        <p>Основной вариант для полного booking: типы, IDE и понятные различия.</p>
-      </section>
-      <section class="card warn small">
-        <h2>SoftAssertions для PATCH</h2>
-        <pre>SoftAssertions.assertSoftly(softly -> {
-  softly.assertThat(saved.lastname())
-      .as("changed").isEqualTo(changed);
-  softly.assertThat(saved.firstname())
-      .as("preserved name").isEqualTo(original.firstname());
-  softly.assertThat(saved.bookingdates())
-      .as("preserved dates").isEqualTo(original.bookingdates());
-});</pre>
-      </section>
-      <section class="card blue small">
-        <h2>Schema + business</h2>
-        <pre>response.then()
-    .body(matchesJsonSchemaInClasspath(
-        "schemas/lesson01/booking-schema.json"))
-    .body("firstname", equalTo(expected.firstname()));</pre>
-        <table><tr><th>Ловит</th><td>Required, type, nesting, format.</td></tr><tr><th>Не ловит</th><td>Чужие values, state, auth.</td></tr></table>
-      </section>
-      <section class="card gray"><h2>Правило читаемости</h2><p class="rule">Способ проверки должен делать контракт очевиднее. Иначе извлеките DTO или упростите.</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 5/9 • response tools</span><span>Инструмент выбирается по форме задачи.</span></footer>
-</section>
-
-<section class="sheet" id="page6">
-  <header class="topbar"><div class="page-no">6/9</div><div class="title"><h1>Specifications, архитектура и диагностика</h1><p>Убираем шум и сохраняем бизнес-смысл</p></div><div class="page-priority">ФОКУС: P1</div></header>
-  <main class="content cols">
-    <div class="stack">
-      <section class="card blue small">
-        <h2>RequestSpecification</h2>
-        <pre>RequestSpecification baseSpec =
-  new RequestSpecBuilder()
-    .setBaseUri(BASE_URL)
-    .setAccept(ContentType.JSON)
-    .addFilter(new ErrorLoggingFilter())
-    .build();</pre>
-        <h3>Уместно</h3><ul><li>base URI и safe headers;</li><li>Accept/Content-Type группы;</li><li>timeouts/config;</li><li>failure logging;</li><li>technical auth клиента.</li></ul>
-      </section>
-      <section class="card danger">
-        <h2>Не прячьте в spec</h2>
-        <ul><li>Данные конкретного теста.</li><li>Business assertions.</li><li>Status для разных исходов endpoint.</li><li>Изменяемый глобальный body.</li><li>Секреты в открытом логировании.</li></ul>
-      </section>
-      <section class="card green small">
-        <h2>ResponseSpecification</h2>
-        <pre>ResponseSpecification okJson =
-  new ResponseSpecBuilder()
-    .expectStatusCode(200)
-    .expectContentType(ContentType.JSON)
-    .build();
-
-response.then()
-    .spec(okJson)
-    .body("firstname", equalTo(expected.firstname()));</pre>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>Разделение слоёв</h2>
-        <table><tr><th>Tests</th><td>Сценарий, expected, assertions.</td></tr><tr><th>Client</th><td>Выполнение endpoint без business asserts.</td></tr><tr><th>Models</th><td>Request/response DTO.</td></tr><tr><th>Fixtures</th><td>Валидные уникальные данные.</td></tr><tr><th>Specs/config</th><td>URL, headers, HTTP settings, logging.</td></tr></table>
-      </section>
-      <section class="card warn small">
-        <h2>Логировать при провале</h2>
-        <pre>given()
+assertThat(response.statusCode())
+    .isEqualTo(404);</pre><p>Тест зелёный, если сервер правильно отказал. Успех теста не всегда означает HTTP 200.</p></section>
+    <section><h2>Почему нужны логи</h2><p>Когда тест падает, одного сообщения «expected 200, actual 500» мало. Нужно увидеть, куда ушёл request и что вернул сервер. Но <code>log().all()</code> во всех тестах создаёт тысячи строк и может показать token или password.</p><p>Практичный вариант — логировать только при провале validation:</p><pre>given()
     .log().ifValidationFails()
-  .when()
-    .get("/booking/{id}", id)
-  .then()
-    .log().ifValidationFails();</pre>
-        <p>Глобальный log().all() создаёт шум и может раскрыть token/password.</p>
-      </section>
-      <section class="card blue">
-        <h2>Минимум диагностики</h2>
-        <ol><li>Environment/base URL.</li><li>Method, path, params.</li><li>Safe request headers/body.</li><li>Response status/headers/body.</li><li>Созданный id и unique data.</li><li>Expected/actual и шаг flow.</li></ol>
-      </section>
-      <section class="card danger">
-        <h2>Классифицируйте</h2>
-        <table><tr><th>Product</th><td>PATCH изменил лишнее.</td></tr><tr><th>Test</th><td>Неверный path/expected.</td></tr><tr><th>Data</th><td>Чужой id.</td></tr><tr><th>Environment</th><td>DNS/timeout/down.</td></tr><tr><th>Contract</th><td>Docs ≠ implementation.</td></tr></table>
-      </section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 6/9 • maintainability</span><span>Reuse убирает шум, но не скрывает ожидание.</span></footer>
-</section>
-
-<section class="sheet" id="page7">
-  <header class="topbar"><div class="page-no">7/9</div><div class="title"><h1>Auth и изменение состояния</h1><p>Token, PUT, PATCH, DELETE и обязательный read-back</p></div><div class="page-priority">ВАЖНОСТЬ: P0 + P1</div></header>
-  <main class="content cols wide-left">
-    <div class="stack">
-      <section class="card blue small">
-        <h2>Получить и использовать token</h2>
-        <pre>String token = given()
+...
+response.then()
+    .log().ifValidationFails();</pre><p>Для общих failure logs можно подключить <code>ErrorLoggingFilter</code>.</p></section>
+    <section><h2>Что искать в логе</h2><ol><li>Правильный base URL и path.</li><li>Фактический HTTP method.</li><li>Path/query parameters.</li><li>Content-Type и безопасные headers.</li><li>Request body соответствует DTO.</li><li>Status, response headers и body.</li></ol><p>Так ошибка классифицируется: неверный тест, некорректные данные, дефект продукта или проблема окружения.</p></section>
+    <section><h2>Зачем RequestSpecification</h2><p>Base URL и Accept одинаковы почти у всех запросов. Если повторять их в каждом тесте, важное действие теряется среди технических строк.</p><pre>RequestSpecification BASE_SPEC =
+    new RequestSpecBuilder()
+        .setBaseUri(BASE_URL)
+        .setAccept(ContentType.JSON)
+    .build();</pre><p>Builder по шагам создаёт объект настроек. Метод <code>build()</code> завершает сборку.</p></section>
+    <section><h2>Как specification применяется</h2><pre>given()
     .spec(BASE_SPEC)
-    .contentType(ContentType.JSON)
-    .body(new AuthRequest("admin", "password123"))
-  .when()
-    .post("/auth")
-  .then()
-    .statusCode(200)
-    .body("token", notNullValue())
-    .extract().path("token");
-
-given().cookie("token", token);</pre>
-      </section>
-      <section class="card danger">
-        <h2><span class="priority p0">P0</span>Negative auth</h2>
-        <ul><li>Неверный password → Bad credentials.</li><li>Неверный username → Bad credentials.</li><li>PUT/PATCH/DELETE без token → 403.</li></ul>
-        <p>Happy path не доказывает защиту endpoint.</p>
-      </section>
-      <section class="card green">
-        <h2>PUT: полная замена</h2>
-        <ol><li>Создать original.</li><li>Собрать полный updated DTO.</li><li>PUT с token.</li><li>Проверить response.</li><li>GET saved.</li><li>Recursive compare с updated.</li></ol>
-      </section>
-      <section class="card warn"><h2>Секреты</h2><p>Token, Authorization и password маскируются в CI/Allure. Failure logging безопаснее глобального.</p></section>
-    </div>
-    <div class="stack">
-      <section class="card warn small">
-        <h2>PATCH: changed + preserved</h2>
-        <pre>Map&lt;String, Object&gt; patch =
-    Map.of("lastname", changedLastName);
-
-given()
-    .spec(BASE_SPEC)
-    .cookie("token", token)
-    .contentType(ContentType.JSON)
-    .body(patch)
-  .when()
-    .patch("/booking/{id}", bookingId)
-  .then()
-    .statusCode(200);
-
-BookingResponse saved =
-    getBooking(bookingId).as(BookingResponse.class);</pre>
-      </section>
-      <section class="card green small">
-        <h2>DELETE: response + state</h2>
-        <pre>given()
-    .spec(BASE_SPEC)
-    .cookie("token", token)
     .pathParam("id", bookingId)
-  .when()
-    .delete("/booking/{id}")
-  .then()
-    .statusCode(201);
+.when()
+    .get("/booking/{id}");</pre><p>Сначала подключается общее, потом добавляется специфичное для request. Specification не отправляет запрос сама — она только хранит настройки.</p></section>
+    <section class="danger"><h2>Что нельзя прятать в specification</h2><ul><li>Body и expected конкретного теста.</li><li>ID, принадлежащий одному сценарию.</li><li>Business assertions.</li><li>Ожидаемый status, если happy и negative cases различаются.</li></ul><p>Цель specification — убрать повторяющуюся HTTP-механику, а не спрятать смысл теста.</p></section>
+    <section class="task"><h2>Tasks06–07</h2><p><b>Task06:</b> на request включить <code>log().ifValidationFails()</code>, сохранить Response, а затем вызвать <code>response.then().log().ifValidationFails().statusCode(404)</code>. Именно REST Assured validation связывает ожидаемый status с условным логированием.</p><p><b>Task07:</b> самостоятельно собрать RequestSpecification через builder и применить её к реальному GET.</p></section>
+  </main><footer class="footer"><span>5/10 · диагностика и reuse</span><span>логи должны объяснять падение, а не создавать шум</span></footer>
+</article>
 
-getBooking(bookingId).then().statusCode(404);</pre>
-      </section>
-      <section class="card danger">
-        <h2>Что забывают</h2>
-        <ul><li>PUT отправляет неполный body.</li><li>PATCH не подтверждается GET.</li><li>Не проверены preserved fields.</li><li>DELETE не подтверждён 404.</li><li>Изменяется чужая запись.</li><li>Token печатается в лог.</li></ul>
-      </section>
-      <section class="card gray"><h2>Формула</h2><p class="rule">before state → authorized action → response → after state → invariants.</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 7/9 • mutations</span><span>Mutation проверена только после read-back.</span></footer>
-</section>
+<article class="page" id="page6">
+  <header class="head"><div class="number">6/10</div><div><h1>Аутентификация и параметризованные тесты</h1><div class="sub">От credentials к token и проверке нескольких вариантов ошибки</div></div><div class="level">ПРАКТИКА · TASKS 08–09</div></header>
+  <main class="content">
+    <section><h2>Authentication и authorization</h2><p><b>Authentication</b> отвечает на вопрос «кто вы?». Клиент отправляет username/password и получает token.</p><p><b>Authorization</b> отвечает на вопрос «можно ли вам выполнить действие?». Token прикладывается к защищённым PUT, PATCH и DELETE.</p><p>Это два разных шага, даже если в разговоре оба называют «авторизацией».</p></section>
+    <section><h2>Credentials — обычный request DTO</h2><pre>AuthRequest credentials =
+    new AuthRequest("admin", "password123");
 
-<section class="sheet" id="page8">
-  <header class="topbar"><div class="page-no">8/9</div><div class="title"><h1>JUnit и AssertJ внутри REST suite</h1><p>Выполнение, test data и понятные проверки одного сценария</p></div><div class="page-priority">ФОКУС: P1</div></header>
-  <main class="content cols">
-    <div class="stack">
-      <section class="card blue">
-        <h2>JUnit формирует suite</h2>
-        <table><tr><th>@Test</th><td>Один independent scenario.</td></tr><tr><th>@ParameterizedTest</th><td>Один contract, таблица inputs.</td></tr><tr><th>@BeforeEach</th><td>Fixture/config.</td></tr><tr><th>@AfterEach</th><td>Cleanup resources.</td></tr><tr><th>@Tag</th><td>smoke/regression/api.</td></tr></table>
-      </section>
-      <section class="card green small">
-        <h2>Invalid auth как data table</h2>
-        <pre>@ParameterizedTest
-@CsvSource({
+Response response = given()
+    .spec(BASE_SPEC)
+    .contentType(ContentType.JSON)
+    .body(credentials)
+.when()
+    .post("/auth");</pre><p>Здесь нет специальной магии безопасности: это обычный POST с JSON body.</p></section>
+    <section><h2>Token — обычный response DTO</h2><pre>{ "token": "abc123..." }</pre><pre>record AuthResponse(String token) {}</pre><pre>AuthResponse actual =
+    response.as(AuthResponse.class);
+
+assertThat(actual.token()).isNotBlank();</pre><p>Затем token передаётся защищённому endpoint в cookie:</p><pre>.cookie("token", actual.token())</pre></section>
+    <section><h2>Что проверяет negative auth</h2><p>Happy path доказывает, что правильные credentials дают token. Но он не доказывает, что неправильные credentials отклоняются. Поэтому нужны случаи:</p><ul><li>правильный user + неправильный password;</li><li>неправильный user + правильный password;</li><li>оба значения неправильные.</li></ul><p>Для каждого сервер возвращает одинаковую форму:</p><pre>{ "reason": "Bad credentials" }</pre><p>Она десериализуется в <code>AuthErrorResponse</code>.</p></section>
+    <section><h2>Зачем @ParameterizedTest</h2><p>Логика request и assertions одинакова, меняются только входные значения. Вместо трёх почти одинаковых методов JUnit запускает один метод три раза.</p><pre>@CsvSource({
   "admin, wrong-password",
   "wrong-user, password123",
   "wrong-user, wrong-password"
-})
-void invalidAuth(String username, String password) {
-    Response r = auth(username, password);
-    assertThat(r.statusCode()).isEqualTo(200);
-    assertThat(r.jsonPath().getString("reason"))
-        .isEqualTo("Bad credentials");
-}</pre>
-      </section>
-      <section class="card danger">
-        <h2>Не связывайте методы</h2>
-        <div class="goodbad"><div class="bad"><b>Плохо</b><p>testUpdate использует static id из testCreate.</p></div><div class="good"><b>Хорошо</b><p>Каждый тест создаёт своё; CRUD живёт внутри одного метода.</p></div></div>
-      </section>
-      <section class="card warn"><h2>Параллельность начинается с дизайна</h2><p>Unique data, локальный expected, нет static mutable id, cleanup только своего resource.</p></section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>AssertJ проверяет Java DTO</h2>
-        <pre>BookingResponse actual =
-    response.as(BookingResponse.class);
+})</pre><p>При каждом запуске значения очередной строки попадают в параметры <code>username</code> и <code>password</code>.</p></section>
+    <section class="note"><h2>Когда параметризация не нужна</h2><p>Если у сценариев разные действия или разные ожидания, не пытайтесь запихнуть их в одну таблицу с множеством условий. Parameterized test подходит для одного контракта и набора однотипных inputs.</p></section>
+    <section class="task"><h2>Tasks08–09</h2><p><b>Task08:</b> POST credentials → response → <code>AuthResponse</code> → непустой token.</p><p><b>Task09:</b> взять username/password из JUnit-параметров → POST → <code>AuthErrorResponse</code> → проверить reason.</p></section>
+  </main><footer class="footer"><span>6/10 · auth</span><span>credentials → token → protected request</span></footer>
+</article>
 
-assertThat(actual)
-    .usingRecursiveComparison()
-    .isEqualTo(expected);</pre>
-        <p>REST Assured проверил HTTP, Jackson создал DTO, AssertJ показал различия.</p>
-      </section>
-      <section class="card warn small">
-        <h2>Soft assertions для связанных полей</h2>
-        <pre>SoftAssertions.assertSoftly(softly -> {
+<article class="page" id="page7">
+  <header class="head"><div class="number">7/10</div><div><h1>PUT и PATCH: проверяем изменение состояния</h1><div class="sub">Чем полная замена отличается от частичного обновления</div></div><div class="level">УВЕРЕННО · TASKS 10–11</div></header>
+  <main class="content">
+    <section><h2>Общая схема mutation-теста</h2><p>PUT и PATCH изменяют данные. Их нельзя считать проверенными только потому, что endpoint вернул успешный status. Нужен снимок состояния до действия и read-back после.</p><div class="arrow">ORIGINAL → ACTION → RESPONSE → GET → SAVED → ASSERTIONS</div></section>
+    <section><h2>PUT — полная замена</h2><p>В PUT передаётся полный объект <code>updated</code>. Он должен заменить текущее состояние resource.</p><pre>Response updateResponse = given()
+    .spec(BASE_SPEC)
+    .cookie("token", getToken())
+    .contentType(ContentType.JSON)
+    .pathParam("id", bookingId)
+    .body(updated)
+.when()
+    .put("/booking/{id}");</pre><p>Каждая часть уже знакома: общая spec, token, формат body, ID, DTO и HTTP method.</p></section>
+    <section><h2>Что проверяем после PUT</h2><ol><li>Update response имеет ожидаемый status.</li><li>Отдельный GET читает resource.</li><li>JSON превращается в <code>BookingResponse saved</code>.</li><li><code>saved</code> полностью совпадает с <code>updated</code>.</li></ol><p>Именно последняя проверка доказывает, что сервер сохранил все поля.</p></section>
+    <section><h2>PATCH — меняем только часть</h2><p>Для PATCH часто не нужен полный DTO: отправляется маленький JSON только с изменяемыми полями. Здесь <code>Map</code> практична и хорошо показывает намерение.</p><pre>Map&lt;String, Object&gt; patch =
+    Map.of("lastname", changedLastName);</pre><p>Jackson превратит Map в:</p><pre>{ "lastname": "Patched-..." }</pre><p>Request собирается как PUT, но method — <code>patch</code>, а body — <code>patch</code>.</p></section>
+    <section><h2>Changed и preserved fields</h2><p>После PATCH недостаточно проверить новый lastname. Сервер мог случайно обнулить остальные поля. Поэтому GET после PATCH проверяет две группы:</p><table><tr><th>Changed</th><td>lastname равен новому значению</td></tr><tr><th>Preserved</th><td>firstname, price, dates равны original</td></tr></table></section>
+    <section><h2>Почему здесь SoftAssertions</h2><p>Поля описывают одно сохранённое состояние. Если повреждено несколько, полезно увидеть их все за один запуск.</p><pre>SoftAssertions.assertSoftly(softly -> {
   softly.assertThat(saved.lastname())
-      .as("changed").isEqualTo(changed);
+      .isEqualTo(changedLastName);
   softly.assertThat(saved.firstname())
-      .as("preserved").isEqualTo(original.firstname());
-  softly.assertThat(saved.totalprice())
-      .as("price").isEqualTo(original.totalprice());
-});</pre>
-      </section>
-      <section class="card blue">
-        <h2>Что где проверять</h2>
-        <table><tr><th>REST Assured</th><td>Status/type/headers/small body.</td></tr><tr><th>AssertJ</th><td>DTO, lists, recursive/soft.</td></tr><tr><th>JUnit</th><td>Execution/lifecycle/data/report.</td></tr></table>
-      </section>
-      <section class="card danger"><h2>Не делайте assert true</h2><p>Проверяйте actual-данные типовыми assertions. Иначе теряется причина расхождения.</p></section>
-      <section class="card gray"><h2>Единая картина</h2><p class="rule">JUnit → REST Assured → Jackson → AssertJ → JUnit cleanup.</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 8/9 • toolchain</span><span>Инструменты разделяют ответственность внутри одного flow.</span></footer>
-</section>
+      .isEqualTo(original.firstname());
+});</pre><p><code>softly</code> — объект-сборщик проверок. Он запоминает ошибки внутри лямбды и сообщает их вместе после её завершения.</p></section>
+    <section class="task"><h2>Tasks10–11</h2><p><b>Task10:</b> PUT полного DTO и полное сравнение read-back.</p><p><b>Task11:</b> PATCH маленькой Map и проверка changed/preserved state.</p></section>
+  </main><footer class="footer"><span>7/10 · изменения</span><span>успешный response не заменяет проверку сохранённого state</span></footer>
+</article>
 
-<section class="sheet" id="page9">
-  <header class="topbar"><div class="page-no">9/9</div><div class="title"><h1>Финальный boss и алгоритм работы</h1><p>Самостоятельный CRUD-flow и критерий готовности</p></div><div class="page-priority">ИТОГ: P0 СОБРАН</div></header>
-  <main class="content cols wide-left">
-    <div class="stack">
-      <section class="card blue">
-        <h2>Финальный independent flow</h2>
-        <ol><li>Создать unique request DTO.</li><li>POST, transport/body, extract id.</li><li>Сразу зарегистрировать cleanup.</li><li>GET, DTO, recursive compare.</li><li>PATCH одного поля с token.</li><li>GET, changed + preserved.</li><li>DELETE с token.</li><li>GET → 404.</li><li>finally страхует cleanup.</li></ol>
-      </section>
-      <section class="card green small">
-        <h2>Скелет</h2>
-        <pre>BookingRequest initial = uniqueBooking("Final");
-Integer id = null;
+<article class="page" id="page8">
+  <header class="head"><div class="number">8/10</div><div><h1>Безопасность, DELETE и cleanup</h1><div class="sub">Проверяем не только отказ или ответ, но и итоговое состояние</div></div><div class="level">УВЕРЕННО · TASKS 12–13</div></header>
+  <main class="content">
+    <section><h2>Отказ должен оставлять данные неизменными</h2><p>Task12 отправляет PUT без token. Ожидаемый status 403 доказывает, что endpoint отклонил request. Но этого мало: дефектный сервер мог вернуть 403 и всё равно применить update.</p><p>Поэтому negative mutation имеет два assertions:</p><ol><li><code>deniedResponse.statusCode() == 403</code>;</li><li>GET после отказа возвращает исходный <code>original</code>.</li></ol><div class="arrow">ORIGINAL → PUT БЕЗ TOKEN → 403 → GET → ORIGINAL</div></section>
+    <section><h2>Почему forbiddenUpdate отличается от original</h2><p>Если отправить те же данные, что уже сохранены, нельзя понять, применил сервер запрещённый request или нет. Поэтому <code>forbiddenUpdate</code> намеренно содержит другие значения. Тогда read-back однозначно показывает результат.</p><p class="note">Test data выбираются так, чтобы различать возможные исходы сценария.</p></section>
+    <section><h2>DELETE — тоже mutation</h2><p>DELETE меняет state: resource должен перестать существовать. Проверка только status 201 говорит лишь о response операции.</p><pre>Response deleteResponse = given()
+    .spec(BASE_SPEC)
+    .cookie("token", getToken())
+    .pathParam("id", bookingId)
+.when()
+    .delete("/booking/{id}");</pre><p>После этого отдельный GET должен вернуть 404.</p></section>
+    <section><h2>Tracker и ручное удаление</h2><p>При создании ID был добавлен в <code>createdBookingIds</code>. Если основной сценарий сам успешно удалил resource, ID нужно убрать из tracker:</p><pre>createdBookingIds.remove(bookingId);</pre><p>Иначе <code>@AfterEach</code> попытается удалить его повторно. Это не всегда опасно, но создаёт лишний запрос и шум.</p></section>
+    <section><h2>Как работает @AfterEach</h2><pre>@AfterEach
+void removeCreatedBookings() {
+  for (int id : createdBookingIds) {
+    deleteBookingIfPresent(id);
+  }
+  createdBookingIds.clear();
+}</pre><p>JUnit вызывает этот метод после каждого теста — и после успешного, и после упавшего. Поэтому cleanup не зависит от того, дошёл основной сценарий до конца или нет.</p></section>
+    <section><h2>Cleanup не должен скрывать главную ошибку</h2><p>Метод <code>deleteBookingIfPresent</code> ловит ошибку очистки и пишет сообщение, а не заменяет ею исходное падение assertion. Иначе вместо настоящего дефекта вы увидите только «cleanup failed».</p></section>
+    <section class="task"><h2>Tasks12–13</h2><p><b>Task12:</b> запрещённый PUT → 403 → GET → original не изменился.</p><p><b>Task13:</b> DELETE с token → удалить ID из tracker → GET 404.</p></section>
+  </main><footer class="footer"><span>8/10 · security и cleanup</span><span>negative action проверяет и response, и неизменность state</span></footer>
+</article>
+
+<article class="page" id="page9">
+  <header class="head"><div class="number">9/10</div><div><h1>Независимые тесты и финальный CRUD-flow</h1><div class="sub">Как собрать всё изученное в устойчивый сценарий</div></div><div class="level">MIDDLE · TASKS 14–15</div></header>
+  <main class="content">
+    <section><h2>Почему тесты начинают падать случайно</h2><p>API-тесты часто становятся flaky не из-за REST Assured, а из-за общих данных. Один тест создаёт static ID, второй его обновляет, третий удаляет. При другом порядке или параллельном запуске всё ломается.</p><p>Независимый тест сам создаёт нужное состояние и не использует результат другого тестового метода.</p></section>
+    <section><h2>Признаки независимости</h2><ul><li>Request DTO создаётся внутри теста.</li><li>Данные уникальны, например через UUID.</li><li>ID хранится в локальной переменной.</li><li>Expected не находится в static mutable field.</li><li>Cleanup удаляет только созданные этим тестом resources.</li><li>Метод проходит отдельно и в полном suite.</li></ul></section>
+    <section><h2>Зачем task14 создаёт две записи</h2><p>Один успешный create/read ещё не показывает, что тест не перепутывает данные. В task14 создаются first и second с разными expected DTO. Затем каждый ID читается отдельно и сравнивается со своим expected.</p><pre>firstId  → firstActual  → firstExpected
+secondId → secondActual → secondExpected</pre><p>Дополнительно ID должны быть положительными и различаться.</p></section>
+    <section><h2>Финальный сценарий task15</h2><ol><li>Создать unique <code>initial</code>.</li><li>POST, проверить status, получить <code>CreateBookingResponse</code>.</li><li>Сохранить ID в подготовленную переменную <code>bookingId</code>.</li><li>GET по ID, получить DTO, сравнить с initial.</li><li>Получить token.</li><li>PATCH <code>additionalneeds</code>.</li><li>GET, проверить изменённое и сохранённое.</li><li>DELETE с token.</li><li>GET должен вернуть 404.</li><li><code>finally</code> страхует cleanup при раннем падении.</li></ol></section>
+    <section><h2>Зачем try/finally, если есть @AfterEach</h2><p>В финальном задании cleanup уже принадлежит <code>finally</code>. После POST сохраните ID в переменную <code>bookingId</code>, но не добавляйте его в общий tracker: иначе запись будут пытаться удалить дважды. Если ID успели получить, cleanup выполнится независимо от места падения.</p><pre>Integer bookingId = null;
 try {
-    id = create(initial);             // POST
-    assertBooking(id, initial);       // GET + AssertJ
-
-    patchNeeds(id, "Lunch", token);   // PATCH
-    assertNeeds(id, "Lunch");         // GET
-
-    delete(id, token);                // DELETE
-    get(id).then().statusCode(404);   // state
+    // основной CRUD-flow
 } finally {
-    if (id != null) deleteIfPresent(id);
-}</pre>
-      </section>
-      <section class="card danger">
-        <h2>Локализуйте шаг</h2>
-        <table><tr><th>POST</th><td>Payload/type/create contract.</td></tr><tr><th>GET 1</th><td>Persistence/DTO/data.</td></tr><tr><th>PATCH</th><td>Auth/partial update.</td></tr><tr><th>GET 2</th><td>Changed/preserved state.</td></tr><tr><th>DELETE/404</th><td>Deletion/state.</td></tr><tr><th>Cleanup</th><td>Infra; не скрывать main error.</td></tr></table>
-      </section>
-    </div>
-    <div class="stack">
-      <section class="card green">
-        <h2>Алгоритм нового endpoint</h2>
-        <ol><li>Выписать method/path/auth/request/response.</li><li>Определить риск и state transition.</li><li>Спроектировать independent data.</li><li>Вручную изучить real response.</li><li>Автоматизировать happy path.</li><li>Для mutation добавить read-back.</li><li>Добавить ценные negative cases.</li><li>Добавить cleanup/failure logs.</li><li>Только затем вынести reuse.</li><li>Запустить отдельно и в suite.</li></ol>
-      </section>
-      <section class="card warn">
-        <h2>Checklist review</h2>
-        <ul><li>□ Contract, не только доступность.</li><li>□ Expected связан с request.</li><li>□ Нет чужого/static id.</li><li>□ Mutation подтверждена GET.</li><li>□ PATCH проверяет preserved.</li><li>□ Auth positive + negative.</li><li>□ Cleanup переживает failure.</li><li>□ Логи без секретов.</li><li>□ Specs не скрывают business.</li><li>□ Нет зависимости от порядка.</li></ul>
-      </section>
-      <section class="card blue"><h2>«Спокойно использую в работе»</h2><p>Не нужно помнить каждый метод. Нужно без подсказки спроектировать данные, request, assertions, state verification, negative coverage, cleanup и диагностику.</p></section>
-      <section class="card danger"><h2>Главный приоритет</h2><p class="rule">Простой independent тест с read-back лучше сложного fluent-кода, проверяющего только status.</p></section>
-      <section class="card gray"><h2>Дальше P2</h2><p>OAuth, custom filters, parallel suite, service virtualization, CI secrets, Allure attachments, HTTP tuning — по потребности проекта.</p></section>
-    </div>
-  </main>
-  <footer class="footer"><span>REST API testing • 9/9 • final boss</span><span>Уверенность даёт процесс, а не число выученных методов.</span></footer>
-</section>
+    if (bookingId != null) {
+        deleteBookingIfPresent(bookingId);
+    }
+}</pre><p>В реальном проекте обычно выбирают один согласованный механизм cleanup, чтобы не дублировать действия.</p></section>
+    <section class="danger"><h2>Финальный тест не должен быть единственным</h2><p>Большой CRUD-flow показывает, что части работают вместе, но при падении сложнее локализовать причину. Короткие тесты на create, auth, update и delete всё ещё нужны. Финальный flow дополняет их, а не заменяет.</p></section>
+    <section class="task"><h2>Что значит «задача решена»</h2><p>Тест проходит несколько раз подряд, отдельно и вместе с классом; после запуска не остаются данные; по сообщению об ошибке понятно, на каком шаге и какие expected/actual разошлись.</p></section>
+  </main><footer class="footer"><span>9/10 · устойчивый suite</span><span>каждый тест владеет своими данными</span></footer>
+</article>
 
-</body>
-</html>
+<article class="page" id="page10">
+  <header class="head"><div class="number">10/10</div><div><h1>Единая картина и рабочая памятка</h1><div class="sub">Кто за что отвечает, как начинать новый тест и где искать ошибку</div></div><div class="level">ИТОГ · MIDDLE+</div></header>
+  <main class="content">
+    <section><h2>Роли инструментов</h2><table><tr><th>Инструмент</th><th>Ответственность</th></tr><tr><td>JUnit</td><td>Находит и запускает тесты, вызывает Before/After, подставляет параметры</td></tr><tr><td>REST Assured</td><td>Собирает HTTP request и возвращает Response</td></tr><tr><td>Jackson</td><td>Сериализует DTO в JSON и десериализует JSON в DTO</td></tr><tr><td>AssertJ</td><td>Сравнивает actual Java-данные с expected</td></tr><tr><td>DTO</td><td>Типизированное Java-представление request/response JSON</td></tr></table></section>
+    <section><h2>Алгоритм нового endpoint</h2><ol><li>Прочитать документацию: method, path, params, auth, request и response.</li><li>Определить, что является главным риском сценария.</li><li>Создать request DTO с уникальными данными.</li><li>Собрать request и сохранить <code>Response</code>.</li><li>Проверить точный status и важный content type.</li><li>Преобразовать body в response DTO.</li><li>Сравнить response DTO с request/expected.</li><li>После mutation прочитать state отдельным GET.</li><li>Добавить значимый negative case.</li><li>Настроить cleanup и failure logging.</li><li>Запустить отдельно, в suite и повторно.</li></ol></section>
+    <section><h2>Мини-словарь методов</h2><table><tr><td><code>given()</code></td><td>Начать описание request</td></tr><tr><td><code>spec(x)</code></td><td>Подключить общие настройки</td></tr><tr><td><code>contentType(JSON)</code></td><td>Request body отправляется как JSON</td></tr><tr><td><code>body(dto)</code></td><td>Передать объект для сериализации</td></tr><tr><td><code>pathParam</code></td><td>Подставить часть path</td></tr><tr><td><code>queryParam</code></td><td>Добавить фильтр URL</td></tr><tr><td><code>cookie</code></td><td>Передать token Restful Booker</td></tr><tr><td><code>get/post/put/patch/delete</code></td><td>Выполнить HTTP method</td></tr><tr><td><code>response.as(Class)</code></td><td>JSON-object → DTO</td></tr><tr><td><code>response.as(TypeRef)</code></td><td>JSON-array → generic collection</td></tr><tr><td><code>response.asString()</code></td><td>Получить body как текст</td></tr></table></section>
+    <section><h2>Структура проекта после обучения</h2><table><tr><th>Папка/слой</th><th>Что там</th></tr><tr><td>tests</td><td>Сценарии, expected и assertions</td></tr><tr><td>client</td><td>Методы вызова endpoint, возвращающие Response/DTO</td></tr><tr><td>models</td><td>Request и response DTO</td></tr><tr><td>fixtures</td><td>Создание валидных unique test data</td></tr><tr><td>config/specs</td><td>Base URL, headers, auth/config и logging</td></tr></table><p>Не создавайте все слои заранее. Сначала напишите несколько понятных тестов, затем вынесите повторяющуюся механику.</p></section>
+    <section><h2>Если тест упал</h2><ol><li>Request ушёл на правильный URL и method?</li><li>Body действительно сериализовалось в ожидаемый JSON?</li><li>Token присутствует и не просрочен?</li><li>Status говорит об ошибке теста, продукта или окружения?</li><li>Response body соответствует DTO?</li><li>Expected построен из тех же данных, что request?</li><li>Проверяется собственный ID?</li><li>Mutation подтверждена GET?</li></ol></section>
+    <section class="note"><h2>Что нужно запомнить</h2><p>Не требуется помнить каждую функцию REST Assured. Нужно понимать путь данных: Java DTO превращается в JSON request; сервер возвращает JSON response; Jackson создаёт response DTO; AssertJ сравнивает actual с expected; GET после изменения подтверждает state; JUnit гарантирует lifecycle и cleanup.</p></section>
+    <section class="task"><h2>Формула рабочего API-теста</h2><p><b>Контракт → собственные данные → request → status → response DTO → business assertions → read-back → negative case → cleanup → диагностика.</b></p></section>
+  </main><footer class="footer"><span>10/10 · единая картина</span><span>уверенность даёт понятный процесс, а не количество выученных методов</span></footer>
+</article>
+
+</body></html>

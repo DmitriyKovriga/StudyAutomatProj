@@ -1,12 +1,10 @@
 package org.example.lessons.lesson01.restassured;
 
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.filter.log.ErrorLoggingFilter;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,20 +19,16 @@ import java.util.Set;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.notNullValue;
 
 /**
- * Урок 1 / REST API testing with REST Assured, JUnit and AssertJ.
+ * Урок 1 / практический REST API testing: REST Assured + DTO + AssertJ + JUnit.
  *
  * API: https://restful-booker.herokuapp.com
  * Теория: docs/lessons/lesson-01/rest-assured.md
  *
- * Выполняйте блоки по порядку. Удаляйте @Disabled только у текущего задания.
- * Сервис общий и периодически сбрасывает данные, поэтому тесты создают собственные записи.
+ * Выполняйте задачи по порядку и удаляйте @Disabled только у текущей задачи.
+ * Каждый тест создаёт собственные данные и не зависит от порядка запуска.
  */
 class RestAssuredTasksTest {
 
@@ -54,213 +48,131 @@ class RestAssuredTasksTest {
         createdBookingIds.clear();
     }
 
-    // БЛОК 1. Понимаем HTTP-контракт и читаем существующие данные.
+    // БЛОК 1. Два эталона: HTTP response и JSON-массив как Java DTO.
 
     @Test
     @Disabled
-    void task01_healthCheckAsCompleteHttpCheck() {
-        // TODO: Выполните GET /ping через given/when/then и проверьте status 201,
-        //       Content-Type text/plain и точное тело "Created".
-        failUntilImplemented();
-    }
-
-    @Test
-    @Disabled
-    void task02_bookingListTransportAndShape() {
-        // TODO: Выполните GET /booking и проверьте status 200, Content-Type JSON,
-        //       непустой массив и положительный bookingid у каждого элемента.
-        failUntilImplemented();
-    }
-
-    @Test
-    @Disabled
-    void task03_extractExistingIdAndReadBooking() {
-        // TODO: Получите список /booking, извлеките первый bookingid, затем выполните
-        //       GET /booking/{id} через pathParam и сохраните оба результата.
-        int bookingId = 0;
-        Response bookingResponse = null;
-
-        assertThat(bookingId).isPositive();
-        assertThat(bookingResponse).isNotNull();
-        assertThat(bookingResponse.statusCode()).isEqualTo(200);
-        assertThat(bookingResponse.contentType()).contains("application/json");
-        assertThat(bookingResponse.jsonPath().getString("firstname")).isNotBlank();
-        assertThat(bookingResponse.jsonPath().getString("bookingdates.checkin")).isNotBlank();
-    }
-
-    @Test
-    @Disabled
-    void task04_unknownBookingWithUsefulDiagnostics() {
-        int unknownId = Integer.MAX_VALUE;
-
-        // TODO: Выполните GET /booking/{id} для unknownId, включите логирование request и response
-        //       только при провале проверки и сохраните ответ в response.
+    void task01_healthCheckAsResponseAndAssertJ() {
+        // TODO task01 (печатка: лист 1): Выполните GET /ping через BASE_SPEC и сохраните
+        //              результат в response; готовые AssertJ-проверки оставьте без изменений.
         Response response = null;
 
-        assertThat(response).isNotNull();
-        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.statusCode()).isEqualTo(201);
+        assertThat(response.contentType()).startsWith("text/plain");
+        assertThat(response.asString()).isEqualTo("Created");
     }
-
-    // БЛОК 2. Создаём свои данные и проверяем не только ответ, но и состояние сервера.
 
     @Test
     @Disabled
-    void task05_createFromMapAndValidateResponse() {
-        String firstName = "Map-" + UUID.randomUUID();
-        Map<String, Object> body = Map.of(
-                "firstname", firstName,
-                "lastname", "Student",
-                "totalprice", 250,
-                "depositpaid", true,
-                "bookingdates", Map.of("checkin", "2026-08-01", "checkout", "2026-08-05"),
-                "additionalneeds", "Breakfast");
-
-        // TODO: Выполните POST /booking с Content-Type JSON и body, проверьте transport-контракт,
-        //       извлеките bookingid в createdId и зарегистрируйте его через track(createdId).
+    void task02_bookingListAsDtoList() {
+        // TODO task02 (печатка: лист 2): Выполните GET /booking, сохраните response
+        //              и десериализуйте JSON-массив в bookings через TypeRef.
         Response response = null;
-        int createdId = 0;
+        List<BookingIdResponse> bookings = null;
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.contentType()).contains("application/json");
+        assertThat(bookings)
+                .isNotEmpty()
+                .allSatisfy(booking -> assertThat(booking.bookingid()).isPositive());
+    }
+
+    // БЛОК 2. Ежедневная основа: request DTO, response DTO и read-back.
+
+    @Test
+    @Disabled
+    void task03_createBookingFromDto() {
+        BookingRequest expected = uniqueBooking("Create");
+
+        // TODO task03 (печатка: лист 3): Отправьте expected в POST /booking, сохраните
+        //              response, десериализуйте body в actual и добавьте ID в tracker.
+        Response response = null;
+        CreateBookingResponse actual = null;
 
         assertThat(response).isNotNull();
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.contentType()).contains("application/json");
-        assertThat(createdId).isPositive();
-        assertThat(response.jsonPath().getString("booking.firstname")).isEqualTo(firstName);
-    }
-
-    @Test
-    @Disabled
-    void task06_createFromDtoAndDeserializeWrapper() {
-        BookingRequest expected = uniqueBooking("DtoCreate");
-
-        // TODO: Отправьте expected в POST /booking, десериализуйте весь ответ
-        //       в CreateBookingResponse actual и зарегистрируйте actual.bookingid() через track.
-        CreateBookingResponse actual = null;
-
         assertThat(actual).isNotNull();
         assertThat(actual.bookingid()).isPositive();
-        assertThat(actual.booking())
-                .usingRecursiveComparison()
-                .isEqualTo(expected);
+        assertThat(actual.booking()).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
     @Disabled
-    void task07_createReadAndComparePersistedDto() {
-        BookingRequest expected = uniqueBooking("Persisted");
+    void task04_createThenReadSavedBooking() {
+        BookingRequest expected = uniqueBooking("ReadBack");
         int bookingId = createTrackedBooking(expected);
 
-        // TODO: Выполните GET /booking/{id}, проверьте status 200, десериализуйте body
-        //       в BookingResponse actual и сравните его с expected через recursive comparison.
+        // TODO task04 (печатка: лист 4): Выполните GET /booking/{id} через pathParam,
+        //              сохраните response и десериализуйте body в actual BookingResponse.
+        Response response = null;
         BookingResponse actual = null;
 
-        assertThat(actual).isNotNull();
-        assertThat(actual)
-                .usingRecursiveComparison()
-                .isEqualTo(expected);
+        assertThat(response).isNotNull();
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
     @Disabled
-    void task08_filterOnlyOwnBookingByName() {
+    void task05_filterBookingsAndDeserializeList() {
         BookingRequest expected = uniqueBooking("Filter");
         int createdId = createTrackedBooking(expected);
 
-        // TODO: Выполните GET /booking с queryParam firstname и lastname из expected,
-        //       извлеките все bookingid в ids и проверьте, что среди них есть createdId.
+        // TODO task05 (печатка: лист 4): Передайте firstname и lastname через queryParam,
+        //              выполните GET /booking и десериализуйте response в actual DTO-список.
         Response response = null;
-        List<Integer> ids = null;
+        List<BookingIdResponse> actual = null;
 
         assertThat(response).isNotNull();
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(ids).contains(createdId);
-    }
-
-    // БЛОК 3. Выбираем подходящий способ проверки body.
-
-    @Test
-    @Disabled
-    void task09_inlineHamcrestForSmallBodyContract() {
-        BookingRequest expected = uniqueBooking("Hamcrest");
-        int bookingId = createTrackedBooking(expected);
-
-        // TODO: Выполните GET /booking/{id} и одной then-цепочкой проверьте status 200,
-        //       firstname, totalprice, bookingdates.checkin и непустой additionalneeds.
-        failUntilImplemented();
+        assertThat(actual).extracting(BookingIdResponse::bookingid).contains(createdId);
     }
 
     @Test
     @Disabled
-    void task10_jsonPathForValuesNeededByTest() {
-        BookingRequest expected = uniqueBooking("JsonPath");
-        int bookingId = createTrackedBooking(expected);
+    void task06_notFoundResponseWithFailureLogging() {
+        int unknownId = Integer.MAX_VALUE;
 
-        // TODO: Выполните GET /booking/{id}, через JsonPath извлеките firstname,
-        //       totalprice и bookingdates.checkout в подготовленные переменные.
+        // TODO task06 (печатка: лист 5): Выполните GET /booking/{id}, включите request log
+        //              при validation failure, сохраните response и провалидируйте 404 ниже.
         Response response = null;
-        String firstName = null;
-        int totalPrice = 0;
-        String checkout = null;
 
         assertThat(response).isNotNull();
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(firstName).isEqualTo(expected.firstname());
-        assertThat(totalPrice).isEqualTo(expected.totalprice());
-        assertThat(checkout).isEqualTo(expected.bookingdates().checkout());
+        response.then().log().ifValidationFails().statusCode(404);
+        assertThat(response.asString()).containsIgnoringCase("not found");
     }
+
+    // БЛОК 3. Общая HTTP-конфигурация и аутентификация.
 
     @Test
     @Disabled
-    void task11_schemaPlusBusinessAssertions() {
-        BookingRequest expected = uniqueBooking("Schema");
-        int bookingId = createTrackedBooking(expected);
-
-        // TODO: Выполните GET /booking/{id}, проверьте status 200, JSON Schema
-        //       schemas/lesson01/booking-schema.json и отдельно firstname из expected.
-        failUntilImplemented();
-    }
-
-    // БЛОК 4. Убираем техническое дублирование, не пряча смысл теста.
-
-    @Test
-    @Disabled
-    void task12_buildReusableRequestSpecification() {
-        // TODO: Через RequestSpecBuilder создайте specification с BASE_URL, Accept JSON
-        //       и ErrorLoggingFilter, затем примените её к GET /booking.
+    void task07_buildAndUseRequestSpecification() {
+        // TODO task07 (печатка: лист 5): Создайте через RequestSpecBuilder specification
+        //              с BASE_URL и Accept JSON, затем примените её к GET /booking.
         RequestSpecification specification = null;
         Response response = null;
 
         assertThat(specification).isNotNull();
         assertThat(response).isNotNull();
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.jsonPath().getList("bookingid")).isNotNull();
+        assertThat(response.as(new TypeRef<List<BookingIdResponse>>() {
+        })).isNotNull();
     }
 
     @Test
     @Disabled
-    void task13_buildReusableResponseSpecification() {
-        // TODO: Через ResponseSpecBuilder создайте okJson, ожидающий status 200 и Content-Type JSON,
-        //       примените его к GET /booking и дополнительно проверьте положительные bookingid.
-        ResponseSpecification okJson = null;
+    void task08_authenticateAndDeserializeToken() {
+        AuthRequest credentials = new AuthRequest("admin", "password123");
 
-        given()
-                .spec(BASE_SPEC)
-                .when()
-                .get("/booking")
-                .then()
-                .spec(okJson)
-                .body("bookingid", everyItem(greaterThan(0)));
-    }
+        // TODO task08 (печатка: лист 6): Отправьте credentials в POST /auth,
+        //              сохраните response и десериализуйте JSON в actual AuthResponse.
+        Response response = null;
+        AuthResponse actual = null;
 
-    // БЛОК 5. Аутентификация и проверка реального изменения состояния.
-
-    @Test
-    @Disabled
-    void task14_createAndUseAuthenticationToken() {
-        // TODO: Выполните POST /auth с AuthRequest("admin", "password123"), проверьте status 200
-        //       и извлеките token в переменную token.
-        String token = null;
-
-        assertThat(token).isNotBlank();
+        assertThat(response).isNotNull();
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(actual).isNotNull();
+        assertThat(actual.token()).isNotBlank();
     }
 
     @ParameterizedTest(name = "invalid auth: username={0}, password={1}")
@@ -270,51 +182,53 @@ class RestAssuredTasksTest {
             "wrong-user, wrong-password"
     })
     @Disabled
-    void task15_invalidAuthenticationAsJUnitDataTable(String username, String password) {
-        // TODO: Отправьте username/password в POST /auth, сохраните Response и проверьте
-        //       status 200 и reason == "Bad credentials".
+    void task09_invalidAuthenticationAsDataTable(String username, String password) {
+        // TODO task09 (печатка: лист 6): Отправьте AuthRequest с параметрами метода
+        //              в POST /auth и десериализуйте body в actual AuthErrorResponse.
         Response response = null;
+        AuthErrorResponse actual = null;
 
         assertThat(response).isNotNull();
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.jsonPath().getString("reason")).isEqualTo("Bad credentials");
+        assertThat(actual).isNotNull();
+        assertThat(actual.reason()).isEqualTo("Bad credentials");
     }
+
+    // БЛОК 4. Изменения проверяются отдельным чтением сохранённого состояния.
 
     @Test
     @Disabled
-    void task16_putMeansFullReplacementAndRequiresReadBack() {
+    void task10_replaceBookingWithPutAndReadBack() {
         int bookingId = createTrackedBooking(uniqueBooking("BeforePut"));
         BookingRequest updated = uniqueBooking("AfterPut");
 
-        // TODO: Получите token, выполните PUT /booking/{id} с updated, проверьте ответ,
-        //       затем отдельным GET прочитайте saved и сравните весь DTO с updated.
+        // TODO task10 (печатка: лист 7): Выполните PUT /booking/{id} с token и updated,
+        //              затем отдельным GET десериализуйте сохранённое состояние в saved.
         Response updateResponse = null;
         BookingResponse saved = null;
 
         assertThat(updateResponse).isNotNull();
         assertThat(updateResponse.statusCode()).isEqualTo(200);
-        assertThat(saved).isNotNull();
-        assertThat(saved)
-                .usingRecursiveComparison()
-                .isEqualTo(updated);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(updated);
     }
 
     @Test
     @Disabled
-    void task17_patchChangesOneFieldAndPreservesTheRest() {
+    void task11_patchOneFieldAndCheckPreservedFields() {
         BookingRequest original = uniqueBooking("BeforePatch");
         int bookingId = createTrackedBooking(original);
         String changedLastName = "Patched-" + UUID.randomUUID();
+        Map<String, Object> patch = Map.of("lastname", changedLastName);
 
-        // TODO: Выполните авторизованный PATCH /booking/{id} только с lastname,
-        //       затем отдельным GET десериализуйте сохранённый BookingResponse в saved.
+        // TODO task11 (печатка: лист 7): Выполните PATCH /booking/{id} с token и patch,
+        //              затем отдельным GET десериализуйте сохранённое состояние в saved.
         Response patchResponse = null;
         BookingResponse saved = null;
 
         assertThat(patchResponse).isNotNull();
         assertThat(patchResponse.statusCode()).isEqualTo(200);
+        assertThat(saved).isNotNull();
         SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(saved).as("saved booking").isNotNull();
             softly.assertThat(saved.lastname()).as("changed lastname").isEqualTo(changedLastName);
             softly.assertThat(saved.firstname()).as("preserved firstname")
                     .isEqualTo(original.firstname());
@@ -327,25 +241,28 @@ class RestAssuredTasksTest {
 
     @Test
     @Disabled
-    void task18_updateWithoutAuthenticationIsRejected() {
-        int bookingId = createTrackedBooking(uniqueBooking("Unauthorized"));
-        BookingRequest update = uniqueBooking("MustNotBeSaved");
+    void task12_rejectedUpdateDoesNotChangeState() {
+        BookingRequest original = uniqueBooking("Protected");
+        int bookingId = createTrackedBooking(original);
+        BookingRequest forbiddenUpdate = uniqueBooking("MustNotBeSaved");
 
-        // TODO: Выполните PUT /booking/{id} с update, но без token/basic auth,
-        //       и сохраните ответ в response для проверки отказа 403.
-        Response response = null;
+        // TODO task12 (печатка: лист 8): Выполните PUT /booking/{id} без token,
+        //              сохраните deniedResponse, затем отдельным GET получите saved.
+        Response deniedResponse = null;
+        BookingResponse saved = null;
 
-        assertThat(response).isNotNull();
-        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(deniedResponse).isNotNull();
+        assertThat(deniedResponse.statusCode()).isEqualTo(403);
+        assertThat(saved).usingRecursiveComparison().isEqualTo(original);
     }
 
     @Test
     @Disabled
-    void task19_deleteAndConfirmResourceState() {
+    void task13_deleteBookingAndConfirmItIsGone() {
         int bookingId = createTrackedBooking(uniqueBooking("Delete"));
 
-        // TODO: Выполните авторизованный DELETE /booking/{id}, проверьте status 201,
-        //       удалите id из createdBookingIds и отдельным GET подтвердите status 404.
+        // TODO task13 (печатка: лист 8): Выполните DELETE /booking/{id} с token,
+        //              уберите ID из tracker и отдельным GET сохраните getAfterDelete.
         Response deleteResponse = null;
         Response getAfterDelete = null;
 
@@ -355,16 +272,16 @@ class RestAssuredTasksTest {
         assertThat(getAfterDelete.statusCode()).isEqualTo(404);
     }
 
-    // БЛОК 6. Надёжность suite и финальный самостоятельный сценарий.
+    // БЛОК 5. Устойчивый suite и итоговый рабочий сценарий.
 
     @Test
     @Disabled
-    void task20_twoTestsWorthOfDataMustNotMix() {
+    void task14_twoIndependentResourcesDoNotMix() {
         BookingRequest firstExpected = uniqueBooking("First");
         BookingRequest secondExpected = uniqueBooking("Second");
 
-        // TODO: Создайте и зарегистрируйте две записи, прочитайте обе через GET,
-        //       сохраните id и DTO в подготовленные переменные и докажите их независимость.
+        // TODO task14 (печатка: лист 9): Создайте две записи, прочитайте обе как DTO
+        //              и заполните переменные так, чтобы доказать независимость данных.
         int firstId = 0;
         int secondId = 0;
         BookingResponse firstActual = null;
@@ -378,13 +295,12 @@ class RestAssuredTasksTest {
 
     @Test
     @Disabled
-    void task21_finalBossIndependentCrudScenario() {
-        BookingRequest initial = uniqueBooking("FinalBoss");
+    void task15_finalIndependentCrudScenario() {
+        BookingRequest initial = uniqueBooking("Final");
         Integer bookingId = null;
         try {
-            // TODO: Одним независимым сценарием выполните POST и извлеките id; GET и сравнение DTO
-            //       через AssertJ; PATCH additionalneeds; повторный GET; авторизованный DELETE;
-            //       финальный GET со status 404. Используйте BASE_SPEC, DTO и проверки transport/body/state.
+            // TODO task15 (печатка: листы 9–10): Выполните POST и сохраните ID в bookingId;
+            //              затем GET, PATCH+GET, DELETE и финальный GET 404; cleanup уже в finally.
             failUntilImplemented();
         } finally {
             if (bookingId != null) {
@@ -393,18 +309,20 @@ class RestAssuredTasksTest {
         }
     }
 
-    private int createTrackedBooking(BookingRequest request) {
-        int bookingId = given()
+    private Response createBooking(BookingRequest request) {
+        return given()
                 .spec(BASE_SPEC)
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when()
-                .post("/booking")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("bookingid");
-        track(bookingId);
+                .post("/booking");
+    }
+
+    private int createTrackedBooking(BookingRequest request) {
+        Response response = createBooking(request);
+        assertThat(response.statusCode()).as("fixture creation status").isEqualTo(200);
+        int bookingId = response.as(CreateBookingResponse.class).bookingid();
+        createdBookingIds.add(bookingId);
         return bookingId;
     }
 
@@ -417,21 +335,14 @@ class RestAssuredTasksTest {
     }
 
     private String getToken() {
-        return given()
+        Response response = given()
                 .spec(BASE_SPEC)
                 .contentType(ContentType.JSON)
                 .body(new AuthRequest("admin", "password123"))
                 .when()
-                .post("/auth")
-                .then()
-                .statusCode(200)
-                .body("token", notNullValue())
-                .extract()
-                .path("token");
-    }
-
-    private void track(int bookingId) {
-        createdBookingIds.add(bookingId);
+                .post("/auth");
+        assertThat(response.statusCode()).as("fixture authentication status").isEqualTo(200);
+        return response.as(AuthResponse.class).token();
     }
 
     private void deleteBookingIfPresent(int bookingId) {
@@ -462,7 +373,16 @@ class RestAssuredTasksTest {
         throw new AssertionError("Замените эту строку реализацией задания");
     }
 
+    public record BookingIdResponse(int bookingid) {
+    }
+
     public record AuthRequest(String username, String password) {
+    }
+
+    public record AuthResponse(String token) {
+    }
+
+    public record AuthErrorResponse(String reason) {
     }
 
     public record BookingDates(String checkin, String checkout) {
