@@ -38,37 +38,41 @@ class JUnitTasksTest {
     private BookingRequest standardBooking;
     private final List<Integer> bookingIdsForCleanup = new ArrayList<>();
 
-    // Задание 2. Добавьте к этому методу подходящую аннотацию JUnit. Перед каждым
-    // тестом создавайте новый standardBooking с уникальным firstname.
+    // Задание 2. Сделайте этот метод частью жизненного цикла JUnit: он должен
+    // автоматически выполняться перед каждым тестом. Тело метода уже готово.
+    // Добавьте только нужную аннотацию, затем включите task02 и запустите его.
     void prepareBookingForTest() {
+        standardBooking = new BookingRequest(
+                "Student-" + UUID.randomUUID(),
+                "JUnit",
+                150);
     }
 
-    // Задание 3. Добавьте к этому методу подходящую аннотацию JUnit. После каждого
-    // теста удаляйте из API все ID из bookingIdsForCleanup, затем очищайте список.
+    // Задание 3. Сделайте этот метод частью жизненного цикла JUnit: он должен
+    // автоматически выполняться после каждого теста, даже если тест упал.
+    // Логика очистки уже готова. Добавьте только нужную аннотацию и включите task03.
     void removeCreatedBookings() {
+        bookingIdsForCleanup.forEach(API::deleteBooking);
+        bookingIdsForCleanup.clear();
     }
 
     @Test
     @Disabled
     void task01_checkSuccessfulAuthenticationResponse() {
         ApiResponse<AuthResponse> response = API.authenticate("admin", "password123");
+        int statusCode = response.statusCode();
+        AuthResponse body = response.body();
+        String token = body.token();
 
-        // Задание 1. Получите из response фактический статус и токен. Подготовленные
-        // проверки должны подтвердить оба свойства одного успешного ответа.
-        int actualStatus = 0;
-        String actualToken = null;
-
-        assertAll("Успешная авторизация",
-                () -> assertEquals(200, actualStatus),
-                () -> assertNotNull(actualToken),
-                () -> assertFalse(actualToken.isBlank()));
+        // Задание 1. В уже созданный assertAll добавьте три проверки JUnit: статус
+        // равен 200, body не равен null, token не пустой. Данные уже получены выше:
+        // в этом задании нужно написать только проверки и удалить @Disabled.
+        assertAll("Успешная авторизация");
     }
 
     @Test
     @Disabled
     void task02_beforeEachPreparesFreshBooking() {
-        // Задание 2 находится над методом prepareBookingForTest. В этом тесте не нужно
-        // создавать standardBooking вручную: его должен подготовить JUnit перед запуском.
         assertNotNull(standardBooking, "standardBooking должен создаваться в @BeforeEach");
 
         ApiResponse<CreateBookingResponse> response = API.createBooking(standardBooking);
@@ -84,8 +88,6 @@ class JUnitTasksTest {
     @Test
     @Disabled
     void task03_afterEachRemovesCreatedBookings() {
-        // Задание 3 находится над методом removeCreatedBookings. Созданная здесь запись
-        // должна существовать во время теста и удаляться автоматически после него.
         assertNotNull(standardBooking, "Сначала выполните задание 2");
 
         ApiResponse<CreateBookingResponse> response = API.createBooking(standardBooking);
@@ -95,25 +97,21 @@ class JUnitTasksTest {
         assertTrue(API.bookingExists(bookingId));
     }
 
-    @ParameterizedTest(name = "Некорректный bookingId: {0}")
-    @ValueSource(ints = {0, -1, -100})
+    // Задание 4. Превратите этот метод в параметризованный тест JUnit. Настройте
+    // три запуска со значениями 0, -1 и -100 через источник простых int. Добавьте
+    // шаблон имени «Некорректный bookingId: {0}». Тело теста менять не нужно.
     @Disabled
     void task04_valueSourceForInvalidIds(int bookingId) {
         ApiResponse<BookingResponse> response = API.getBooking(bookingId);
 
-        // Задание 4. Получите фактический HTTP-статус из response. JUnit запустит
-        // одну и ту же проверку отдельно для каждого ID из ValueSource.
-        int actualStatus = 0;
-
-        assertEquals(400, actualStatus);
+        assertEquals(400, response.statusCode());
     }
 
-    @ParameterizedTest(name = "Пользователь {0}: ожидается статус {2}")
-    @CsvSource({
-            "admin, password123, 200, true",
-            "admin, wrong-password, 401, false",
-            "wrong-user, password123, 401, false"
-    })
+    // Задание 5. Превратите этот метод в параметризованный тест JUnit и передайте
+    // через таблицу три набора: успешный вход admin/password123 с 200 и токеном;
+    // admin/wrong-password с 401 без токена; wrong-user/password123 с 401 без
+    // токена. Имя каждого запуска: «Пользователь {0}: ожидается статус {2}».
+    // Тело метода уже полностью готово — добавьте только аннотации JUnit и данные.
     @Disabled
     void task05_csvSourceForAuthentication(
             String username,
@@ -121,42 +119,36 @@ class JUnitTasksTest {
             int expectedStatus,
             boolean tokenExpected) {
 
-        // Задание 5. Вызовите API с username и password из текущей строки CsvSource.
-        // Определите фактический статус и наличие непустого токена в ответе.
-        ApiResponse<AuthResponse> response = null;
-        int actualStatus = 0;
-        boolean actualTokenPresent = false;
+        ApiResponse<AuthResponse> response = API.authenticate(username, password);
+        boolean actualTokenPresent = response.body() != null
+                && response.body().token() != null
+                && !response.body().token().isBlank();
 
         assertAll("Результат авторизации",
-                () -> assertEquals(expectedStatus, actualStatus),
+                () -> assertEquals(expectedStatus, response.statusCode()),
                 () -> assertEquals(tokenExpected, actualTokenPresent));
     }
 
-    @ParameterizedTest(name = "Некорректное имя гостя: [{0}]")
-    @NullSource
-    @EmptySource
-    @ValueSource(strings = {" "})
+    // Задание 6. Превратите этот метод в параметризованный тест JUnit и настройте
+    // отдельные запуски для null, пустой строки и строки из одного пробела. Имя
+    // запуска должно быть «Некорректное имя гостя: [{0}]». Тело не меняйте.
     @Disabled
     void task06_nullAndEmptySourcesForRequiredField(String firstname) {
         BookingRequest request = new BookingRequest(firstname, "Student", 150);
+        ApiResponse<CreateBookingResponse> response = API.createBooking(request);
 
-        // Задание 6. Отправьте request в API и получите фактический статус.
-        // Один метод должен проверить null, пустую строку и строку из пробела.
-        ApiResponse<CreateBookingResponse> response = null;
-        int actualStatus = 0;
-
-        assertEquals(400, actualStatus);
+        assertEquals(400, response.statusCode());
     }
 
+    // Задание 7. Добавьте к методу две аннотации JUnit: отображаемое имя
+    // «API доступен» для отчёта и тег smoke для выборочного запуска. Вызов API
+    // и проверка уже написаны, поэтому больше ничего в теле менять не нужно.
     @Test
     @Disabled
     void task07_readableNameAndSmokeTag() {
-        // Задание 7. Добавьте к тесту отображаемое имя «API доступен» и тег smoke.
-        // Затем вызовите API.healthCheck() и получите фактический статус ответа.
-        ApiResponse<Void> response = null;
-        int actualStatus = 0;
+        ApiResponse<Void> response = API.healthCheck();
 
-        assertEquals(200, actualStatus);
+        assertEquals(200, response.statusCode());
     }
 
     @Test
@@ -164,19 +156,17 @@ class JUnitTasksTest {
     void task08_completeCreateAndReadScenario() {
         assertNotNull(standardBooking, "Сначала выполните задание 2");
 
-        // Задание 8. Создайте запись, сохраните её ID для очистки и прочитайте запись
-        // по ID. Заполните фактический статус создания, ID и прочитанный объект.
-        int createStatus = 0;
-        int bookingId = 0;
-        BookingResponse saved = null;
+        ApiResponse<CreateBookingResponse> createResponse = API.createBooking(standardBooking);
+        int bookingId = createResponse.body().bookingid();
+        bookingIdsForCleanup.add(bookingId);
+        ApiResponse<BookingResponse> readResponse = API.getBooking(bookingId);
+        BookingResponse saved = readResponse.body();
 
-        assertAll("Создание и чтение записи",
-                () -> assertEquals(200, createStatus),
-                () -> assertTrue(bookingId > 0),
-                () -> assertNotNull(saved),
-                () -> assertEquals(standardBooking.firstname(), saved.firstname()),
-                () -> assertEquals(standardBooking.lastname(), saved.lastname()),
-                () -> assertEquals(standardBooking.totalprice(), saved.totalprice()));
+        // Задание 8. Соберите в assertAll проверки одного сценария: статус создания
+        // равен 200, ID положительный, статус чтения равен 200, сохранённый объект
+        // не null, а его firstname, lastname и totalprice равны standardBooking.
+        // Все действия и фактические значения готовы — напишите только проверки.
+        assertAll("Создание и чтение записи");
     }
 
     private record ApiResponse<T>(int statusCode, T body) {
