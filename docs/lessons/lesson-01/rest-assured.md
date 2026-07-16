@@ -1,136 +1,260 @@
-# REST Assured: практический DTO-first маршрут
+# Урок 1: REST Assured с нуля до самостоятельного DTO-first теста
 
-Цель курса — писать обычные поддерживаемые API-тесты, а не изучать все возможности DSL.
+Этот файл — маршрут обучения. Он связывает три части курса:
 
-## Основной стиль
+1. **Печатный конспект** объясняет тему человеческим языком.
+2. **`RestAssuredTasksTest.java`** заставляет применить её руками.
+3. **Готовые assertions в задаче** показывают, какой результат должен быть доказан.
 
-```java
-Response response = given()
-        .spec(BASE_SPEC)
-        .contentType(ContentType.JSON)
-        .body(requestDto)
-    .when()
-        .post("/booking");
+Не пытайтесь сначала прочитать все десять листов, а затем решить все задачи.
+Проходите маленькими циклами: прочитать нужный лист → решить задачу → объяснить
+решение своими словами → перейти дальше.
 
-assertThat(response.statusCode()).isEqualTo(200);
-CreateBookingResponse actual = response.as(CreateBookingResponse.class);
-assertThat(actual.booking()).usingRecursiveComparison().isEqualTo(requestDto);
+## Как работать с каждой задачей
+
+1. Откройте указанный лист печатки.
+2. Прочитайте его полностью, не переписывая код.
+3. Вернитесь к TODO задачи и вслух сформулируйте, какой request нужен.
+4. Заполните только подготовленные переменные над готовыми assertions.
+5. Удалите `@Disabled` только у текущей задачи.
+6. Запустите один тест.
+7. Если он зелёный, запустите весь `RestAssuredTasksTest`.
+8. Ответьте на контрольные вопросы этапа. Если ответ не получается — перечитайте лист.
+
+Печатка находится здесь:
+`docs/print/rest-assured-cheatsheet/rest-assured-cheatsheet.pdf`.
+
+## Единая модель, которая растёт весь урок
+
+```text
+Java request DTO
+        ↓ Jackson serializes
+JSON request
+        ↓ REST Assured sends HTTP
+server changes or reads state
+        ↓ HTTP response
+JSON response
+        ↓ Jackson deserializes
+Java response DTO
+        ↓ AssertJ
+expected is compared with actual
+        ↓ JUnit lifecycle
+cleanup runs after the test
 ```
 
-Распределение ответственности:
+В начале цепочки будет только GET и текстовый Response. К task15 вы самостоятельно
+соберёте весь путь, включая auth, изменение state, negative check и cleanup.
 
-- REST Assured собирает и отправляет HTTP request, возвращает `Response`;
-- Jackson превращает DTO в JSON и JSON обратно в DTO;
-- AssertJ проверяет status, headers и Java-объекты;
-- JUnit запускает сценарии, даёт lifecycle и parameterization.
+---
 
-Вложенные `body("path", matcher)` и JsonPath не запрещены. Они полезны для единичного
-значения, но не являются основой курса: связанный JSON читаем как DTO.
+## Этап 1. Получить и понять response
 
-## Навигация
+### Task01 — первый HTTP request
 
-| Задачи | Рабочий навык |
-|---|---|
-| 01–02 | `Response`, plain text, JSON-массив → `List<DTO>` |
-| 03–05 | POST/GET/filter, request и response DTO, read-back |
-| 06–07 | негативный ответ, failure logging, `RequestSpecification` |
-| 08–09 | token DTO и параметризованный negative auth |
-| 10–13 | PUT, PATCH, auth rejection, DELETE и проверка state |
-| 14–15 | независимые ресурсы, cleanup, полный CRUD-flow |
+- **Прочитать:** печатка, лист 1.
+- **До задачи понять:** request и response; base URL и path; роли `given`, `when`, `get`.
+- **Сделать:** выполнить `GET /ping` через `BASE_SPEC` и сохранить `Response`.
+- **Assertions доказывают:** status 201, текстовый content type, body `Created`.
+- **После задачи объяснить:** почему `Response response = null` означает, что request ещё не выполнен.
 
-## Response и DTO
+### Task02 — JSON-массив как DTO-список
 
-Один объект:
+- **Прочитать:** печатка, лист 2.
+- **До задачи понять:** JSON object и JSON array; DTO; роль Jackson; зачем нужен `TypeRef`.
+- **Сделать:** выполнить `GET /booking`, затем десериализовать body в
+  `List<BookingIdResponse>`.
+- **Assertions доказывают:** список не пуст и каждый DTO содержит положительный ID.
+- **После задачи объяснить:** почему для одного DTO используется `.as(SomeClass.class)`,
+  а для `List<DTO>` — `.as(new TypeRef<>() {})`.
 
-```java
-BookingResponse booking = response.as(BookingResponse.class);
+### Контрольная точка 1
+
+Не переходите дальше, пока не можете без подсказки ответить:
+
+- Что именно делает REST Assured?
+- Что находится внутри `Response`?
+- Кто превращает JSON в Java DTO?
+- Почему assertions выполняет AssertJ, а не Jackson?
+
+---
+
+## Этап 2. Создать собственные данные и доказать сохранение
+
+### Task03 — POST с request DTO
+
+- **Прочитать:** печатка, лист 3.
+- **До задачи понять:** serialization и deserialization; Accept и Content-Type;
+  структура wrapper response.
+- **Сделать:** отправить `BookingRequest expected`, получить `CreateBookingResponse actual`,
+  сохранить созданный ID в tracker.
+- **Assertions доказывают:** сервер создал положительный ID и вернул те же booking-данные.
+- **После задачи объяснить:** почему Java-модель `CreateBookingResponse` содержит и ID,
+  и вложенный `BookingResponse`.
+
+### Task04 — read-back после POST
+
+- **Прочитать:** печатка, лист 4, разделы про read-back и path parameter.
+- **До задачи понять:** create response не гарантирует запись в storage.
+- **Сделать:** прочитать созданный resource через `/booking/{id}` и получить DTO.
+- **Assertions доказывают:** фактически сохранённое состояние совпадает с request DTO.
+- **После задачи объяснить:** какой дефект поймает GET после POST, но не поймает
+  проверка только create response.
+
+### Task05 — фильтрация списка
+
+- **Прочитать:** печатка, лист 4, разделы про query parameter.
+- **До задачи понять:** path parameter выбирает resource, query parameter фильтрует collection.
+- **Сделать:** отфильтровать bookings по имени, получить DTO-список и найти свой ID.
+- **Assertions доказывают:** созданная тестом запись присутствует в результате фильтрации.
+- **После задачи объяснить:** почему нельзя проверять точный размер списка общего сервиса.
+
+### Контрольная точка 2
+
+Вы должны уметь самостоятельно нарисовать:
+
+```text
+expected DTO → POST → create response DTO → ID → GET → saved DTO → comparison
 ```
 
-Generic collection:
+Если любой переход непонятен, не переходите к auth и update.
 
-```java
-List<BookingIdResponse> bookings = response.as(new TypeRef<>() {});
+---
+
+## Этап 3. Сделать тест диагностируемым и убрать технические повторы
+
+### Task06 — ожидаемый 404 и failure logging
+
+- **Прочитать:** печатка, лист 5, первая колонка.
+- **До задачи понять:** negative test может быть зелёным при HTTP 404; условный лог
+  должен быть связан с REST Assured validation.
+- **Сделать:** включить request log через `.log().ifValidationFails()`, получить Response,
+  затем выполнить подготовленную validation status 404.
+- **Assertions доказывают:** неизвестный ID корректно возвращает 404 и понятное body.
+- **После задачи объяснить:** почему постоянный `log().all()` хуже условного logging.
+
+### Task07 — RequestSpecification
+
+- **Прочитать:** печатка, лист 5, вторая колонка.
+- **До задачи понять:** specification хранит конфигурацию request, но сама ничего не отправляет.
+- **Сделать:** через builder создать base URI + Accept JSON и применить spec к GET.
+- **Assertions доказывают:** request с новой specification действительно выполнен.
+- **После задачи объяснить:** почему expected DTO и business assertions нельзя прятать в spec.
+
+### Контрольная точка 3
+
+Возьмите любой предыдущий request и назовите в нём:
+
+- общую конфигурацию;
+- данные конкретного теста;
+- тестируемое действие;
+- transport assertions;
+- business assertions.
+
+---
+
+## Этап 4. Auth и изменение state
+
+### Task08 — получить token как DTO
+
+- **Прочитать:** печатка, лист 6, разделы authentication и token DTO.
+- **До задачи понять:** credentials — request DTO, token — response DTO.
+- **Сделать:** POST `/auth`, получить `AuthResponse actual`.
+- **Assertions доказывают:** правильные credentials возвращают непустой token.
+- **После задачи объяснить:** чем authentication отличается от authorization.
+
+### Task09 — параметризованный negative auth
+
+- **Прочитать:** печатка, лист 6, раздел `@ParameterizedTest`.
+- **До задачи понять:** JUnit запускает один метод по одному разу для каждой строки CsvSource.
+- **Сделать:** сформировать `AuthRequest` из параметров метода и получить error DTO.
+- **Assertions доказывают:** каждый набор неправильных credentials отклоняется одинаково.
+- **После задачи объяснить:** когда три сценария стоит объединять параметризацией, а когда нет.
+
+### Task10 — PUT и read-back
+
+- **Прочитать:** печатка, лист 7, раздел PUT.
+- **До задачи понять:** PUT отправляет полный updated DTO; token передаётся cookie.
+- **Сделать:** авторизованный PUT, затем GET и десериализация `saved`.
+- **Assertions доказывают:** полный updated DTO реально сохранён.
+- **После задачи объяснить:** почему status 200 update response недостаточен.
+
+### Task11 — PATCH и preserved fields
+
+- **Прочитать:** печатка, лист 7, разделы PATCH и SoftAssertions.
+- **До задачи понять:** Map подходит для маленького частичного body; PATCH не должен
+  повреждать остальные поля.
+- **Сделать:** PATCH lastname, затем GET `saved`.
+- **Assertions доказывают:** lastname изменился, а firstname, price и dates сохранились.
+- **После задачи объяснить:** что находится в переменной `softly` и почему проверки
+  сообщаются вместе.
+
+### Task12 — запрещённый update не меняет данные
+
+- **Прочитать:** печатка, лист 8, первая половина.
+- **До задачи понять:** negative mutation проверяет и response, и неизменность state.
+- **Сделать:** PUT без token, затем GET текущего состояния.
+- **Assertions доказывают:** получен 403 и сохранён original, а не forbidden update.
+- **После задачи объяснить:** зачем forbidden update должен отличаться от original.
+
+### Task13 — DELETE и подтверждение удаления
+
+- **Прочитать:** печатка, лист 8, вторая половина.
+- **До задачи понять:** DELETE response не доказывает отсутствие resource.
+- **Сделать:** DELETE с token, удалить ID из tracker, затем GET.
+- **Assertions доказывают:** операция принята и resource действительно возвращает 404.
+- **После задачи объяснить:** зачем убирать уже удалённый ID из cleanup tracker.
+
+### Контрольная точка 4
+
+Для любой mutation вы должны автоматически мыслить формулой:
+
+```text
+before state → action → response → read-back → changed fields → preserved fields
 ```
 
-`TypeRef` сохраняет generic type, который потерялся бы у `List.class`.
+---
 
-## Parameters
+## Этап 5. Устойчивый suite и самостоятельная работа
 
-```java
-.pathParam("id", bookingId)
-.get("/booking/{id}")       // конкретный resource
+### Task14 — два независимых resource
 
-.queryParam("firstname", name)
-.get("/booking")            // фильтрация collection
-```
+- **Прочитать:** печатка, лист 9, первая половина.
+- **До задачи понять:** тестовые данные принадлежат одному тесту; static mutable ID опасен.
+- **Сделать:** создать и прочитать две разные записи.
+- **Assertions доказывают:** ID различаются, каждый actual соответствует своему expected.
+- **После задачи объяснить:** почему тест должен проходить независимо от порядка запуска.
 
-## POST и read-back
+### Task15 — финальный CRUD-flow
 
-```java
-Response create = given().spec(BASE_SPEC)
-        .contentType(ContentType.JSON)
-        .body(expected)
-        .post("/booking");
-CreateBookingResponse created = create.as(CreateBookingResponse.class);
+- **Прочитать:** печатка, лист 9 полностью и лист 10 как памятку.
+- **До задачи понять:** все предыдущие задачи являются частями одного flow.
+- **Сделать:** POST → GET → PATCH → GET → DELETE → GET 404.
+- **Cleanup:** сохранить ID в подготовленную переменную `bookingId`; не добавлять его
+  в общий tracker, потому что cleanup уже выполняется в `finally`.
+- **Assertions должны доказать:** создание, сохранение, частичное изменение,
+  сохранность остальных полей и окончательное удаление.
+- **После задачи объяснить:** какой шаг отвечает за HTTP transport, какой за business data,
+  какой за state, какой за security и какой за cleanup.
 
-Response read = getBooking(created.bookingid());
-BookingResponse saved = read.as(BookingResponse.class);
-assertThat(saved).usingRecursiveComparison().isEqualTo(expected);
-```
+## Финальный критерий готовности
 
-POST response не доказывает сохранение. После mutation делаем отдельный GET.
+Урок пройден не тогда, когда task15 один раз стал зелёным. Вы готовы к самостоятельной
+работе, если можете без копирования:
 
-## RequestSpecification
+1. Прочитать контракт нового endpoint.
+2. Выбрать request и response DTO.
+3. Собрать request с method, params, auth и body.
+4. Получить `Response` и проверить transport.
+5. Десериализовать JSON и проверить business values через AssertJ.
+6. После mutation проверить сохранённый state отдельным GET.
+7. Добавить осмысленный negative case.
+8. Создать собственные unique data и гарантировать cleanup.
+9. По логам определить, сломан request, данные, продукт или окружение.
+10. Объяснить каждую строку своего теста, а не только добиться зелёного запуска.
 
-```java
-RequestSpecification spec = new RequestSpecBuilder()
-        .setBaseUri(BASE_URL)
-        .setAccept(ContentType.JSON)
-        .addFilter(new ErrorLoggingFilter())
-        .build();
-```
+## Что изучать после урока 1
 
-В spec храним общую HTTP-конфигурацию. Request body, test data и business assertions
-остаются в тесте.
-
-## Auth
-
-```java
-AuthResponse auth = response.as(AuthResponse.class);
-
-given().spec(BASE_SPEC)
-    .cookie("token", auth.token())
-    .body(updateDto)
-    .put("/booking/{id}");
-```
-
-Негативные credentials удобно подавать через `@ParameterizedTest` и `@CsvSource`,
-если для всех наборов действует один контракт.
-
-## PUT, PATCH, DELETE
-
-- PUT отправляет полный DTO; GET после него должен совпасть с updated DTO.
-- PATCH отправляет маленькую `Map` только с изменяемыми полями; GET проверяет changed
-  и preserved fields.
-- отказ без token проверяется не только status 403: следующий GET должен показать,
-  что исходный объект не изменился.
-- DELETE подтверждается отдельным GET со status 404.
-
-## Независимость
-
-Каждый тест создаёт свои unique data, сразу регистрирует ID для cleanup, не использует
-static mutable ID и проходит отдельно. `@AfterEach` очищает созданные resources даже
-после assertion failure.
-
-## Рабочий алгоритм
-
-1. Прочитать method/path/auth/request/response contract.
-2. Подготовить unique request DTO.
-3. Выполнить request и сохранить `Response`.
-4. AssertJ-проверкой проверить точный status и нужные headers.
-5. Десериализовать JSON в response DTO.
-6. Проверить DTO относительно request DTO.
-7. После mutation выполнить read-back.
-8. Добавить важный negative case и проверить неизменность state.
-9. Зарегистрировать cleanup и failure logging.
-10. После появления повторений вынести HTTP-механику в API client/specification.
+Только после уверенного прохождения этого маршрута имеет смысл выносить DTO и API client
+в отдельные пакеты, подключать environment config, Allure attachments, CI secrets,
+parallel execution и более сложную авторизацию. Эти темы не должны мешать пониманию
+базового потока данных на первом уроке.

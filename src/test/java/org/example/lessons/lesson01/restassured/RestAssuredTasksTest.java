@@ -2,7 +2,6 @@ package org.example.lessons.lesson01.restassured;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.common.mapper.TypeRef;
-import io.restassured.filter.log.ErrorLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -37,7 +36,6 @@ class RestAssuredTasksTest {
     private static final RequestSpecification BASE_SPEC = new RequestSpecBuilder()
             .setBaseUri(BASE_URL)
             .setAccept(ContentType.JSON)
-            .addFilter(new ErrorLoggingFilter())
             .build();
 
     private final Set<Integer> createdBookingIds = new LinkedHashSet<>();
@@ -55,8 +53,8 @@ class RestAssuredTasksTest {
     @Test
     @Disabled
     void task01_healthCheckAsResponseAndAssertJ() {
-        // TODO task01: Выполните GET /ping, сохраните результат в response и оставьте
-        //              проверки status, content type и текстового body через AssertJ.
+        // TODO task01 (печатка: лист 1): Выполните GET /ping через BASE_SPEC и сохраните
+        //              результат в response; готовые AssertJ-проверки оставьте без изменений.
         Response response = null;
 
         assertThat(response.statusCode()).isEqualTo(201);
@@ -67,8 +65,8 @@ class RestAssuredTasksTest {
     @Test
     @Disabled
     void task02_bookingListAsDtoList() {
-        // TODO task02: Выполните GET /booking, сохраните response и десериализуйте
-        //              JSON-массив в bookings через TypeRef<List<BookingIdResponse>>.
+        // TODO task02 (печатка: лист 2): Выполните GET /booking, сохраните response
+        //              и десериализуйте JSON-массив в bookings через TypeRef.
         Response response = null;
         List<BookingIdResponse> bookings = null;
 
@@ -86,8 +84,8 @@ class RestAssuredTasksTest {
     void task03_createBookingFromDto() {
         BookingRequest expected = uniqueBooking("Create");
 
-        // TODO task03: Отправьте expected в POST /booking, сохраните Response в response,
-        //              проверьте status 200, десериализуйте body в actual и зарегистрируйте ID.
+        // TODO task03 (печатка: лист 3): Отправьте expected в POST /booking, сохраните
+        //              response, десериализуйте body в actual и добавьте ID в tracker.
         Response response = null;
         CreateBookingResponse actual = null;
 
@@ -104,8 +102,8 @@ class RestAssuredTasksTest {
         BookingRequest expected = uniqueBooking("ReadBack");
         int bookingId = createTrackedBooking(expected);
 
-        // TODO task04: Выполните GET /booking/{id} через pathParam, сохраните response,
-        //              проверьте status 200 и десериализуйте body в actual BookingResponse.
+        // TODO task04 (печатка: лист 4): Выполните GET /booking/{id} через pathParam,
+        //              сохраните response и десериализуйте body в actual BookingResponse.
         Response response = null;
         BookingResponse actual = null;
 
@@ -120,8 +118,8 @@ class RestAssuredTasksTest {
         BookingRequest expected = uniqueBooking("Filter");
         int createdId = createTrackedBooking(expected);
 
-        // TODO task05: В GET /booking передайте firstname и lastname через queryParam,
-        //              проверьте status 200 и десериализуйте массив в actual DTO-список.
+        // TODO task05 (печатка: лист 4): Передайте firstname и lastname через queryParam,
+        //              выполните GET /booking и десериализуйте response в actual DTO-список.
         Response response = null;
         List<BookingIdResponse> actual = null;
 
@@ -135,12 +133,12 @@ class RestAssuredTasksTest {
     void task06_notFoundResponseWithFailureLogging() {
         int unknownId = Integer.MAX_VALUE;
 
-        // TODO task06: Выполните GET /booking/{id}, включив request/response logging только
-        //              при провале validation, и сохраните ответ в response.
+        // TODO task06 (печатка: лист 5): Выполните GET /booking/{id}, включите request log
+        //              при validation failure, сохраните response и провалидируйте 404 ниже.
         Response response = null;
 
         assertThat(response).isNotNull();
-        assertThat(response.statusCode()).isEqualTo(404);
+        response.then().log().ifValidationFails().statusCode(404);
         assertThat(response.asString()).containsIgnoringCase("not found");
     }
 
@@ -149,8 +147,8 @@ class RestAssuredTasksTest {
     @Test
     @Disabled
     void task07_buildAndUseRequestSpecification() {
-        // TODO task07: Создайте через RequestSpecBuilder specification с BASE_URL,
-        //              Accept JSON и ErrorLoggingFilter, затем примените её к GET /booking.
+        // TODO task07 (печатка: лист 5): Создайте через RequestSpecBuilder specification
+        //              с BASE_URL и Accept JSON, затем примените её к GET /booking.
         RequestSpecification specification = null;
         Response response = null;
 
@@ -166,8 +164,8 @@ class RestAssuredTasksTest {
     void task08_authenticateAndDeserializeToken() {
         AuthRequest credentials = new AuthRequest("admin", "password123");
 
-        // TODO task08: Отправьте credentials в POST /auth, сохраните response,
-        //              проверьте status 200 и десериализуйте JSON в actual AuthResponse.
+        // TODO task08 (печатка: лист 6): Отправьте credentials в POST /auth,
+        //              сохраните response и десериализуйте JSON в actual AuthResponse.
         Response response = null;
         AuthResponse actual = null;
 
@@ -185,8 +183,8 @@ class RestAssuredTasksTest {
     })
     @Disabled
     void task09_invalidAuthenticationAsDataTable(String username, String password) {
-        // TODO task09: Отправьте AuthRequest с параметрами метода в POST /auth,
-        //              проверьте status 200 и десериализуйте body в actual AuthErrorResponse.
+        // TODO task09 (печатка: лист 6): Отправьте AuthRequest с параметрами метода
+        //              в POST /auth и десериализуйте body в actual AuthErrorResponse.
         Response response = null;
         AuthErrorResponse actual = null;
 
@@ -204,8 +202,8 @@ class RestAssuredTasksTest {
         int bookingId = createTrackedBooking(uniqueBooking("BeforePut"));
         BookingRequest updated = uniqueBooking("AfterPut");
 
-        // TODO task10: Выполните авторизованный PUT /booking/{id} с updated, проверьте
-        //              status 200, затем отдельным GET десериализуйте состояние в saved.
+        // TODO task10 (печатка: лист 7): Выполните PUT /booking/{id} с token и updated,
+        //              затем отдельным GET десериализуйте сохранённое состояние в saved.
         Response updateResponse = null;
         BookingResponse saved = null;
 
@@ -222,8 +220,8 @@ class RestAssuredTasksTest {
         String changedLastName = "Patched-" + UUID.randomUUID();
         Map<String, Object> patch = Map.of("lastname", changedLastName);
 
-        // TODO task11: Выполните авторизованный PATCH /booking/{id} с patch, проверьте
-        //              status 200, затем отдельным GET десериализуйте состояние в saved.
+        // TODO task11 (печатка: лист 7): Выполните PATCH /booking/{id} с token и patch,
+        //              затем отдельным GET десериализуйте сохранённое состояние в saved.
         Response patchResponse = null;
         BookingResponse saved = null;
 
@@ -248,8 +246,8 @@ class RestAssuredTasksTest {
         int bookingId = createTrackedBooking(original);
         BookingRequest forbiddenUpdate = uniqueBooking("MustNotBeSaved");
 
-        // TODO task12: Выполните PUT /booking/{id} без token, сохраните deniedResponse,
-        //              затем отдельным GET десериализуйте текущее состояние в saved.
+        // TODO task12 (печатка: лист 8): Выполните PUT /booking/{id} без token,
+        //              сохраните deniedResponse, затем отдельным GET получите saved.
         Response deniedResponse = null;
         BookingResponse saved = null;
 
@@ -263,7 +261,7 @@ class RestAssuredTasksTest {
     void task13_deleteBookingAndConfirmItIsGone() {
         int bookingId = createTrackedBooking(uniqueBooking("Delete"));
 
-        // TODO task13: Выполните авторизованный DELETE /booking/{id}, проверьте status 201,
+        // TODO task13 (печатка: лист 8): Выполните DELETE /booking/{id} с token,
         //              уберите ID из tracker и отдельным GET сохраните getAfterDelete.
         Response deleteResponse = null;
         Response getAfterDelete = null;
@@ -282,8 +280,8 @@ class RestAssuredTasksTest {
         BookingRequest firstExpected = uniqueBooking("First");
         BookingRequest secondExpected = uniqueBooking("Second");
 
-        // TODO task14: Создайте две записи, прочитайте обе как BookingResponse и заполните
-        //              подготовленные переменные так, чтобы доказать независимость данных.
+        // TODO task14 (печатка: лист 9): Создайте две записи, прочитайте обе как DTO
+        //              и заполните переменные так, чтобы доказать независимость данных.
         int firstId = 0;
         int secondId = 0;
         BookingResponse firstActual = null;
@@ -301,8 +299,8 @@ class RestAssuredTasksTest {
         BookingRequest initial = uniqueBooking("Final");
         Integer bookingId = null;
         try {
-            // TODO task15: Одним сценарием выполните POST и получите DTO с ID; GET и сравнение
-            //              DTO; PATCH additionalneeds; GET changed/preserved; DELETE; GET 404.
+            // TODO task15 (печатка: листы 9–10): Выполните POST и сохраните ID в bookingId;
+            //              затем GET, PATCH+GET, DELETE и финальный GET 404; cleanup уже в finally.
             failUntilImplemented();
         } finally {
             if (bookingId != null) {
