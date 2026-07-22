@@ -21,14 +21,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * Теория: docs/lessons/lesson-01/rest-assured.md
  * Решайте задания по порядку: некоторые следующие модели используют предыдущие.
+ *
+ * DTO здесь можно объявлять как static nested class прямо в этом классе (с
+ * Lombok @Data @NoArgsConstructor @AllArgsConstructor) — в отличие от первой
+ * части, здесь это временные модели для разбора конкретного JSON-примера, а не
+ * контракт реального эндпоинта.
  */
 class RestAssuredTasksTest2 extends RestAssuredDtoFlexibilitySupport {
 
     @Test
     @Disabled
     void task01_emptyNullAndMissingFieldInOneRequestDto() {
-        // Задание 1. Объявите record FlexibleBookingRequest(firstname, lastname,
-        // additionalneeds) и создайте один корректный объект. Через valueToTree
+        // Задание 1. Объявите класс FlexibleBookingRequest (поля firstname,
+        // lastname, additionalneeds) и создайте один корректный объект. Через valueToTree
         // получите три независимых ObjectNode: с additionalneeds="", с явным null
         // и без поля additionalneeds. AssertJ должен доказать различие трёх JSON.
     }
@@ -36,8 +41,8 @@ class RestAssuredTasksTest2 extends RestAssuredDtoFlexibilitySupport {
     @Test
     @Disabled
     void task02_optionalObjectAndPresenceOfField() {
-        // Задание 2. Объявите StudentProfile(city) и StudentUserResponse(id, name,
-        // profile). Преобразуйте ответы USER_WITH_NULL_PROFILE_JSON и
+        // Задание 2. Объявите Profile(city) и UserResponse(id, name, profile).
+        // Преобразуйте ответы USER_WITH_NULL_PROFILE_JSON и
         // USER_WITHOUT_PROFILE_JSON в DTO: в обоих profile будет null. Затем
         // прочитайте их как JsonNode и отличите явный null от отсутствующего поля.
     }
@@ -45,7 +50,7 @@ class RestAssuredTasksTest2 extends RestAssuredDtoFlexibilitySupport {
     @Test
     @Disabled
     void task03_ignoreNewUnknownResponseField() {
-        // Задание 3. Добавьте к StudentUserResponse настройку Jackson, позволяющую
+        // Задание 3. Добавьте к UserResponse настройку Jackson, позволяющую
         // игнорировать незнакомые поля. Преобразуйте USER_WITH_EXTRA_FIELD_JSON в
         // тот же DTO и проверьте id, name и profile.city; traceId в DTO не добавляйте.
     }
@@ -54,7 +59,8 @@ class RestAssuredTasksTest2 extends RestAssuredDtoFlexibilitySupport {
     @Disabled
     void task04_genericEnvelopeWithDifferentDataTypes() {
         // Задание 4. Объявите ApiError(code, message), BookingSummary(bookingid,
-        // firstname) и generic-record ApiEnvelope<T>(status, data, error).
+        // firstname) и generic-класс ApiEnvelope<T>(status, data, error) — обычный
+        // класс с Lombok, где T — параметр типа поля data.
         // Преобразуйте два BOOKING_*_ENVELOPE_JSON через TypeRef: в первом data —
         // BookingSummary, во втором List<BookingSummary>. Проверьте обе структуры.
     }
