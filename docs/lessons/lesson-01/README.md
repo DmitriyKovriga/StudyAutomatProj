@@ -5,13 +5,15 @@
 ## Состав урока
 
 1. [JUnit 5: теория и задания](junit.md) — 8 практических заданий.
-2. [REST Assured: теория и задания](rest-assured.md) — 10 практических заданий.
+2. [REST Assured и DTO: теория и задания](rest-assured.md) — 10 основных и
+   8 дополнительных заданий на гибкие контракты.
 3. [AssertJ и другие проверки: теория и задания](assertj.md) — 10 заданий.
 
 Java-заготовки находятся здесь:
 
 - `src/test/java/org/example/lessons/lesson01/junit/JUnitTasksTest.java`
 - `src/test/java/org/example/lessons/lesson01/restassured/RestAssuredTasksTest.java`
+- `src/test/java/org/example/lessons/lesson01/restassured/RestAssuredTasksTest2.java`
 - `src/test/java/org/example/lessons/lesson01/assertj/AssertJTasksTest.java`
 
 ## Как проходить урок
@@ -30,6 +32,7 @@ Java-заготовки находятся здесь:
 .\mvnw.cmd test
 .\mvnw.cmd -Dtest=JUnitTasksTest test
 .\mvnw.cmd -Dtest=RestAssuredTasksTest test
+.\mvnw.cmd -Dtest=RestAssuredTasksTest2 test
 .\mvnw.cmd -Dtest=AssertJTasksTest test
 ```
 
